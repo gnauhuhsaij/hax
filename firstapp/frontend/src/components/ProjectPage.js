@@ -13,7 +13,7 @@ const ProjectPage = () => {
         if (!input.trim()) return; // Prevent empty input submission
         setLoading(true); // Start loading
         try {
-        const response = await axios.post('http://127.0.0.1:8000/process', 
+        const response = await axios.post('http://127.0.0.1:8000/api/process', 
             { user_input: input },
             { headers: { 'Content-Type': 'application/json' } }
           );
