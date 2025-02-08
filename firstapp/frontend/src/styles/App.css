@@ -1,0 +1,33 @@
+/* App container - Ensures full-page layout */
+.app-container {
+  display: flex;
+  flex-direction: row; /* Row layout for two side-by-side areas */
+  height: 100vh; /* Full screen height */
+  width: 100vw;
+  gap: 0px;
+  overflow: hidden; /* Prevent scrolling */
+}
+
+/* Content area - Right side of the screen */
+.content-area {
+  background-color: transparent;
+  margin-left: 0vw;
+  flex: 1; /* Take up remaining space */
+  flex-grow: 1;
+  padding: 0px;
+  overflow-y: hidden; /* Scroll content if needed */
+  display: flex;
+  flex-direction: column; /* Ensure column layout inside */
+  justify-content: flex-start;
+  align-items: flex-start;
+  transition: margin-left 0.3s ease; /* Smooth transition for resizing */
+}
+
+.sidebar.collapsed + .content-area {
+  margin-left: 60px; /* Adjust margin when sidebar is collapsed */
+}
+
+.sidebar.open + .content-area {
+  margin-left: 15vw; /* Adjust margin when sidebar is open */
+}
+

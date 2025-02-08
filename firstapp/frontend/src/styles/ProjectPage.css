@@ -1,0 +1,135 @@
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Noto Sans', sans-serif; /* Set Noto Sans as the default font */
+
+  }
+  
+  /* styles.css */
+
+  /* Full-page gradient background */
+  body {
+    background: var(--gradient_back, linear-gradient(154deg, #f9edff 11.78%, #d3e7fb 57.83%, #f1def8 98.35%));
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
+    height: 100vh;
+    color: #000000;
+  }
+
+  /* Main container with glass effect */
+  .null-wrapper {
+    background-color: transparent;
+    backdrop-filter: none;
+    box-shadow: none;
+    border-radius: 0;
+    padding: 0px;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+
+  } 
+
+  .content-wrapper {
+    width: 100%;
+    background-color: transparent;
+    display: flex;
+    flex-direction: column; /* Stack children vertically */
+    flex-grow: 1; /* Allows it to expand and fill space */
+    width: 100%; /* Take full width of the parent */
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    position: relative;
+  }
+  
+  /* Center message container */
+  .center-message {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 80vw;
+    text-align: center;
+    margin-bottom: 130px;
+  }
+
+  .center-message h2 {
+    font-size: 36px;
+    font-weight: 300;
+    color: #000;
+    font-family: "Noto Sans";
+    font-style: normal;
+    line-height: 150%; /* 54px */
+    letter-spacing: -0.684px;
+  }
+
+  .input-container {
+    display: flex;
+    width: 60vw;
+    height: 8vh;
+    padding: 16px 17px;
+    gap: 110px;
+    border-radius: 10px;
+    border: 1px solid #000;
+    background: rgba(255, 255, 255, 0.40);
+    position: absolute;
+    bottom: 30px; /* Adjust the distance from the bottom */
+  }
+
+  /* Input field styling */
+  input {
+    flex: 1;
+    padding: 12px;
+    margin-right: 10px;
+    border-radius: 4px;
+    border: transparent;
+    background: rgba(255, 255, 255, 0);
+    font-size: 16px;
+    outline: None;
+  }
+
+  /* Button styling */
+  button {
+    padding: 15px;
+    width: 15px;
+    height: 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    background-color: #000000;
+    border-color: rgb(255, 167, 246);
+    font-size: 18px;
+    transition: background-color 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Disabled button state */
+  button:disabled {
+    background-color: #aaa;
+    cursor: not-allowed;
+  }
+
+  /* Spinner animation for loading */
+  .spinner {
+    width: 15px;
+    height: 15px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+  }
+
+  /* Icon styling */
+  i {
+    font-size: 18px;
+  }
