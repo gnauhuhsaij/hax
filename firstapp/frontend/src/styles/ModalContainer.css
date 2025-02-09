@@ -1,0 +1,324 @@
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Noto Sans", sans-serif; /* Set Noto Sans as the default font */
+}
+
+.modal-container {
+  position: relative;
+  display: flex;
+  width: 45vw;
+  height: 86vh;
+  flex-direction: column; /* Fix typo from `justify-content: column` */
+  justify-content: flex-start;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0px 2px 40px 0px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  margin-top: 7vh;
+  padding: 3vh 2vw 0vh 5vw;
+  gap: 2px;
+  overflow-x: hidden;
+  transition: transform 0.3s ease-in-out;
+}
+
+.modal-container.user {
+  height: 86vh; /* Override to set a fixed height */
+}
+
+/* USER */
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.chat-history {
+  display: flex;
+  flex-direction: column;
+  height: 88%;
+  overflow-y: auto;
+  margin-bottom: 10px;
+  padding-top: 6%;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  scrollbar-width: none; /* Firefox */
+  mask-image: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 1) 8%,
+    rgba(0, 0, 0, 1) 92%,
+    rgba(0, 0, 0, 0) 100%
+  );
+}
+
+.chat-message {
+  display: inline-flex;
+  flex-direction: row;
+
+  background-color: transparent;
+  padding: 8px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  max-width: 70%;
+  /* word-wrap: break-word;  */
+  gap: 16px;
+}
+
+.user-message {
+  align-self: flex-end;
+}
+
+.agent-message {
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.message-text {
+  display: flex;
+  padding: 12px;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0px 2px 8px 0px rgba(0, 0, 0, 0.15);
+
+  color: #000;
+  font-family: "Noto Sans";
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 300;
+  line-height: 150%; /* 18px */
+  letter-spacing: -0.228px;
+}
+
+.message-text.user {
+  border-radius: 10px;
+  background: linear-gradient(
+    150deg,
+    rgba(165, 207, 255, 0.08) 4.77%,
+    rgba(73, 161, 255, 0.08) 92.26%
+  );
+}
+
+.icon-circle {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.agent-icon {
+  background-color: #00000000;
+}
+
+.chat-input {
+  display: flex;
+  width: 70%;
+  gap: 10px;
+  flex-direction: row;
+  align-items: center;
+  align-self: center;
+}
+
+.chat-input input {
+  flex: 1;
+  padding: 10px;
+  padding-left: 20px;
+  background: #ffffff;
+  border-radius: 10px;
+  border: 1px solid #777;
+  color: rgb(96, 96, 96);
+  font-size: 12px;
+}
+
+.chat-input-button {
+  padding: 10px 10px;
+  background-color: transparent;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.chat-input button:hover {
+  background-color: #0056b3;
+}
+
+/* WEB */
+.evidence-container {
+  width: 32vw;
+  display: flex;
+  flex-direction: column;
+  padding: 12px 14px;
+  align-items: flex-start;
+  align-content: flex-start;
+  gap: 2px;
+  align-self: stretch;
+  flex-wrap: wrap;
+
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0px 2px 8px 0px rgba(0, 0, 0, 0.15);
+}
+
+.evidence-container:focus {
+  outline: none;
+  background-color: #00000011;
+  box-shadow: 0px 2px 8px 0px rgba(0, 0, 0, 0.283);
+}
+
+.search-header h2 {
+  font-family: Noto Sans;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+  letter-spacing: -0.019em;
+  text-align: left;
+  text-underline-position: from-font;
+  text-decoration-skip-ink: none;
+
+  width: 32vw;
+  margin-bottom: 5px;
+  padding: 2vh 2vw 0vh 2vw;
+}
+
+.search-header h4 {
+  width: 32vw;
+  font-size: 10px;
+  font-weight: normal;
+  color: gray;
+  margin-bottom: 10px;
+  padding: 0vh 2vw 0vh 2vw;
+}
+
+/* Title, Link, and Snippet Styles */
+.evidence-title {
+  width: 60%;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 800;
+  line-height: 150%; /* 18px */
+  letter-spacing: -0.228px;
+
+  white-space: nowrap; /* Prevent wrapping to multiple lines */
+  overflow: hidden; /* Hide overflow content */
+  text-overflow: ellipsis; /* Add ellipsis (...) for overflowing text */
+}
+
+.evidence-favicon {
+  width: 12px;
+  height: 12px;
+}
+
+.evidence-link {
+  font-size: 10px;
+  word-wrap: break-word; /* Break long links */
+  word-break: break-word; /* Additional safeguard for long links */
+}
+
+.evidence-link a {
+  color: inherit; /* Standard link color */
+  text-decoration: none;
+}
+
+.evidence-snippet {
+  width: 90%;
+  font-size: 10px;
+  color: #555;
+}
+
+.button-container {
+  height: 12%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+
+.save-button {
+  width: 184px;
+  height: 45px;
+  gap: 10px;
+  border-radius: 10px;
+  opacity: 0px;
+
+  font-family: Noto Sans;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 45px;
+  letter-spacing: -0.019em;
+  text-align: left;
+  text-underline-position: from-font;
+  text-decoration-skip-ink: none;
+
+  text-align: center;
+  vertical-align: middle;
+  background: #efefef;
+  box-shadow: 0px 2px 5px 0px #00000033;
+}
+
+.preview-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  width: 80%;
+  height: 80%;
+  display: flex;
+  flex-direction: column;
+}
+
+.preview-iframe {
+  flex: 1;
+  width: 100%;
+  border: none;
+}
+
+.parent-container.hidden {
+  transform: translateX(200%); /* 隐藏在屏幕右侧 */
+}
+.modal-container.hidden {
+  transform: translateX(1000%); /* 隐藏在屏幕右侧 */
+}
+
+.placeholder-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  height: 100%;
+  color: gray;
+}
+
+.placeholder-content h2 {
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.placeholder-content p {
+  font-size: 14px;
+  color: #555;
+}

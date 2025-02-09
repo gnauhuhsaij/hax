@@ -1,0 +1,77 @@
+/* General Step Container Styling */
+.step {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  justify-content: space-between;
+  background: rgba(255, 255, 255, 0.114);
+  border-radius: 12px;
+  padding: 18px 20px;
+  box-shadow: 0px 2px 8px 0px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s ease-in-out;
+  cursor: pointer;
+}
+
+.step:hover {
+  transform: translateY(-2px);
+}
+
+/* Step Header */
+.step-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  flex-grow: 1;
+  gap: 4%;
+}
+
+/* Index Circle */
+.step-indexCircle {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  background: transparent;
+  color: white;
+  border-radius: 50%;
+  font-weight: bold;
+  font-size: 16px;
+  margin-right: 16px;
+}
+
+/* Step Name Styling */
+.step-name {
+  width: 70%;
+  color: #000;
+  font-family: "Noto Sans";
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 150%; /* 18px */
+  letter-spacing: -0.228px;
+}
+
+/* Role Circle Button */
+.step-roleCircle {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: black;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background 0.2s ease-in-out;
+}
+
+.step-roleCircle:hover {
+  background: #333;
+}
+
+.step-roleCircle::after {
+  content: "\2192"; /* Unicode for right arrow */
+  color: white;
+  font-size: 20px;
+}
