@@ -396,3 +396,10 @@
   padding: 0px; /* Optional: adjust padding to your needs */
   background: transparent;
 }
+
+.clear-button {
+  position: absolute;
+  bottom: 30px;
+  right: 30px;
+  border-width: 50%;
+}

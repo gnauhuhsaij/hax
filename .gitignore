@@ -1,0 +1,5 @@
+firstapp/frontend/node_modules/.cache/
+firstapp/frontend/node_modules
+__pycache__
+firstapp/venv/
+firstapp/backend/.env
