@@ -83,6 +83,14 @@
   color: #333; /* Text turns black on hover */
 }
 
+.profile-details {
+  margin-top: auto; /* Push it to the bottom naturally */
+  padding: 0px;
+  background-color: rgba(173, 173, 173, 0.2); /* Optional: Visual separation */
+  width: 100%; /* Ensure it doesn’t overflow */
+  height: 13%;
+}
+
 /* Sidebar Profile Section */
 .profile-section {
   margin-top: auto; /* Push it to the bottom naturally */
@@ -95,10 +103,9 @@
   justify-content: flex-start;
   gap: 20px; /* Adds space between elements inside */
   width: 100%; /* Ensure it doesn’t overflow */
-  height: 13%;
+  height: 100%;
   box-sizing: border-box; /* Avoid overflow caused by padding */
 }
-
 /* Profile Image Styling (Optional) */
 .profile-section img {
   margin-left: 20px;

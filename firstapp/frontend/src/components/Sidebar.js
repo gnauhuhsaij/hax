@@ -99,7 +99,7 @@ const Sidebar = () => {
               </Link>
             </li>
           </ul>
-          <div className="profile-section">
+          <div className="profile-details">
             {!user ? (
               <div>
                 {/* This div is used by Google to render its hidden sign-in button */}
@@ -122,7 +122,7 @@ const Sidebar = () => {
                 </button>
               </div>
             ) : (
-              <div className="profile-details">
+              <div className="profile-section">
                 <img
                   src={user.picture}
                   alt="Profile"
@@ -130,7 +130,7 @@ const Sidebar = () => {
                 />
                 <div className="descriptions">
                   <h3 className="username">{user.name}</h3>
-                  <p className="email">{user.email}</p>
+                  <p className="days">20 days on hax</p>
                 </div>
               </div>
             )}
