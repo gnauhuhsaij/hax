@@ -1,37 +1,111 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import '../styles/Dashboard.css';
+import React, { useEffect, useState, useContext } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { AuthContext } from "../contexts/AuthContext"; // Import AuthContext
+import "../styles/Dashboard.css";
 
 const Dashboard = () => {
+  const { user, setCurrentWorkflow } = useContext(AuthContext); // Get user ID and setCurrentWorkflow from AuthContext
+  const [recentProjects, setRecentProjects] = useState([]);
+  const navigate = useNavigate();
+
+  // Fetch workflows from S3 when the component mounts
+  useEffect(() => {
+    const fetchWorkflows = async () => {
+      if (!user) return; // Ensure the user is logged in
+
+      try {
+        const response = await axios.get(
+          "http://127.0.0.1:8000/api/list_workflows",
+          {
+            params: { user_id: user.id }, // Send user ID to backend
+          }
+        );
+
+        if (response.data.workflows && response.data.workflows.length > 0) {
+          // Get the most recent 3 workflows
+          setRecentProjects(response.data.workflows.slice(0, 3));
+        }
+      } catch (error) {
+        console.error("Error fetching workflows:", error);
+      }
+    };
+
+    fetchWorkflows();
+  }, [user]);
+
+  const handleProjectClick = async (projectName) => {
+    if (!user) return;
+    try {
+      const response = await axios.get(
+        "http://127.0.0.1:8000/api/get_workflow",
+        { params: { user_id: user.id, project_name: projectName } }
+      );
+
+      if (response.data.workflow) {
+        setCurrentWorkflow(JSON.stringify(response.data.workflow)); // Store workflow in context
+        navigate("/start-project"); // Redirect to ProjectPage
+      }
+    } catch (error) {
+      console.error("Error fetching project workflow:", error);
+    }
+  };
+
+  const handleNewProject = async () => {
+    setCurrentWorkflow(null);
+  };
+
+  if (!user) {
+    return (
+      <div className="dashboard">
+        <Link to="/start-project">
+          <button className="start-project-btn">
+            <p>+ Start a project</p>
+          </button>
+        </Link>
+        <div className="dashboard-center">
+          <h2>Log in to unlock the full version</h2>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="dashboard">
-    <Link to="/start-project">
-      <button className="start-project-btn">
-        <p>+ Start a project</p>
-      </button>
-    </Link>
+      <Link to="/start-project">
+        <button
+          className="start-project-btn"
+          onClick={() => handleNewProject()}
+        >
+          <p>+ Start a project</p>
+        </button>
+      </Link>
+
       <div className="project-section">
         <h3>Recent</h3>
         <div className="projects">
-          <div className="project-card">
-            <div className="project-header">Social Media Poster</div>
-            <div className="project-image"></div>
-          </div>
-          <div className="project-card">
-            <div className="project-header">TMP 120 Project</div>
-            <div className="project-image"></div>
-          </div>
-          <div className="project-card">
-            <div className="project-header">Self-Study App-Dev</div>
-            <div className="project-image"></div>
-          </div>
-        </div>
-        <h3>Done</h3>
-        <div className="projects">
-          <div className="project-card">
-            <div className="project-header">Event Plan</div>
-            <div className="project-image"></div>
-          </div>
+          {recentProjects.length > 0 ? (
+            recentProjects.map((project, index) => (
+              <div
+                key={index}
+                className="project-card"
+                onClick={() => handleProjectClick(project)}
+                style={{
+                  cursor: "pointer",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                <div className="project-header">
+                  {project.replace(".json", "")}
+                </div>
+                <div className="project-image"></div>
+              </div>
+            ))
+          ) : (
+            <p>No recent projects</p>
+          )}
         </div>
       </div>
     </div>
@@ -39,4 +113,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-
