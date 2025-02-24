@@ -68,8 +68,10 @@ body {
 
 .input-container {
   display: flex;
+  flex-direction: row;
+  align-items: center;
   width: 60vw;
-  height: 8vh;
+  height: 6vh;
   padding: 16px 17px;
   gap: 110px;
   border-radius: 10px;
@@ -99,7 +101,7 @@ button {
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  background-color: #000000;
+  background-color: transparent;
   border-color: rgb(255, 167, 246);
   font-size: 18px;
   transition: background-color 0.3s;

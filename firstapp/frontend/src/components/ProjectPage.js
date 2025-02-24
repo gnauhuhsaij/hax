@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import Workflow from "./Workflow";
 import "../styles/ProjectPage.css"; // Adjust the path to the styles folder
+import { AuthContext } from "../contexts/AuthContext";
 
 const ProjectPage = () => {
+  const { user, currentWorkflow, setCurrentWorkflow } = useContext(AuthContext); // Get user ID from AuthContext
   const [appId, setAppId] = useState(0);
   const [input, setInput] = useState("");
   const [workflow, setWorkflow] = useState(null);
@@ -17,16 +19,27 @@ const ProjectPage = () => {
     "Hey Lydia, what do you want to do in this project?"
   ); // Center message
 
-  // Load workflow and phase names from localStorage on initial render
   useEffect(() => {
-    const savedWorkflow = localStorage.getItem("workflow");
-    const savedPhaseNames = localStorage.getItem("phaseNames");
-
-    if (savedWorkflow && savedPhaseNames) {
-      setWorkflow(JSON.parse(savedWorkflow));
-      setPhaseNames(JSON.parse(savedPhaseNames));
+    if (currentWorkflow) {
+      console.log(workflow);
+      console.log(JSON.stringify(currentWorkflow));
+      setWorkflow(JSON.parse(currentWorkflow));
     }
-  }, []);
+  }, [currentWorkflow]);
+
+  const uploadWorkflowToS3 = async (workflowData) => {
+    if (!user) return; // Ensure user is logged in
+
+    try {
+      await axios.post("http://127.0.0.1:8000/api/upload_workflows", {
+        user_id: user.id, // Unique Google user ID
+        workflow: workflowData,
+      });
+      console.log("Workflow uploaded successfully");
+    } catch (error) {
+      console.error("Error uploading workflow to S3:", error);
+    }
+  };
 
   const handleSubmit = async () => {
     if (!input.trim()) return; // Prevent empty input submission
@@ -88,9 +101,10 @@ const ProjectPage = () => {
         setWorkflow(parsedWorkflow); // Set workflow
         setPhaseNames(phase_names); // Set phase names
 
+        uploadWorkflowToS3(JSON.stringify(parsedWorkflow));
+
         // Save workflow and phase names to localStorage
-        localStorage.setItem("workflow", JSON.stringify(parsedWorkflow));
-        localStorage.setItem("phaseNames", JSON.stringify(phase_names));
+        setCurrentWorkflow(JSON.stringify(parsedWorkflow));
       }
     } catch (error) {
       console.error("Error during submission:", error);
@@ -98,16 +112,6 @@ const ProjectPage = () => {
       setClickCount((prevCount) => prevCount + 1); // Increment click count
       setLoading(false); // Stop loading
     }
-  };
-
-  const handleClearWorkflow = () => {
-    setWorkflow(null);
-    setPhaseNames(null);
-    setInput("");
-    setCenterMessage("Hey Lydia, what do you want to do in this project?");
-    setClickCount(0); // Reset click count
-    localStorage.removeItem("workflow");
-    localStorage.removeItem("phaseNames");
   };
 
   return (
@@ -136,9 +140,6 @@ const ProjectPage = () => {
       ) : (
         <div className="workflow-wrapper">
           <Workflow workflow={workflow} phaseDict={phaseNames} />
-          <button className="clear-button" onClick={handleClearWorkflow}>
-            X
-          </button>
         </div>
       )}
     </div>
