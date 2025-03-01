@@ -1,5 +1,6 @@
 /* App container - Ensures full-page layout */
 .app-container {
+  background: inherit;
   display: flex;
   flex-direction: row; /* Row layout for two side-by-side areas */
   height: 100vh; /* Full screen height */
@@ -10,7 +11,7 @@
 
 /* Content area - Right side of the screen */
 .content-area {
-  background-color: transparent;
+  background: inherit;
   margin-left: 0vw;
   flex: 1; /* Take up remaining space */
   flex-grow: 1;
