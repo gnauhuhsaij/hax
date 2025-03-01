@@ -88,7 +88,7 @@ const Dashboard = () => {
     navigate("/start-project");
   };
 
-  if (loading) {
+  if (!user) {
     return (
       <div
         className={`dashboard ${
