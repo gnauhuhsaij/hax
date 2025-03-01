@@ -95,7 +95,7 @@
   justify-content: flex-start;
   gap: 20px; /* Adds space between elements inside */
   width: 100%; /* Ensure it doesn’t overflow */
-  height: 13%;
+  height: 10%;
   box-sizing: border-box; /* Avoid overflow caused by padding */
 }
 

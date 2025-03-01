@@ -43,8 +43,9 @@ const Sidebar = () => {
     if (window.google) {
       window.google.accounts.id.initialize({
         client_id:
-          "741869303542-rosrg64op3dlp3v475crqr5udkbbdjam.apps.googleusercontent.com", // Replace with your actual Google Client ID
+          "741869303542-sjpg7md2htfftp1bf3ua7548vkdrbg93.apps.googleusercontent.com", // Replace with your actual Google Client ID
         callback: handleCredentialResponse,
+        itp_support: true,
       });
       window.google.accounts.id.renderButton(
         document.getElementById("googleSignInButton"),
@@ -60,6 +61,8 @@ const Sidebar = () => {
 
       // Ensure login prompt is shown
       setTimeout(() => {
+        console.log("window.google:", window.google);
+        console.log("window.google.accounts.id:", window.google?.accounts?.id);
         window.google.accounts.id.prompt();
       }, 500); // Small delay to bypass rate limiting
     }
