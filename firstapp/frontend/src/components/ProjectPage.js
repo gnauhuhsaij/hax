@@ -5,6 +5,7 @@ import "../styles/ProjectPage.css"; // Adjust the path to the styles folder
 import { AuthContext } from "../contexts/AuthContext";
 import CONFIG from '../config';
 import { motion } from "framer-motion";
+import CONFIG from '../config';
 
 const ProjectPage = () => {
   const { user, currentWorkflow, setCurrentWorkflow, currentWorkflowName } =

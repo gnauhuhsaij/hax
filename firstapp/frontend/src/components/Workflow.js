@@ -5,6 +5,7 @@ import ModalContainer from "./ModalContainer";
 import "../styles/Workflow.css";
 import CONFIG from '../config';
 import { AuthContext } from "../contexts/AuthContext";
+import CONFIG from '../config';
 
 const Workflow = ({ workflow }) => {
   const groupedByPhase = workflow.reduce((acc, subtask) => {
