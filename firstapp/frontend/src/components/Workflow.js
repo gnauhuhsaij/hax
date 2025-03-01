@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import axios from "axios";
 import Step from "./Step";
 import ModalContainer from "./ModalContainer";
 import "../styles/Workflow.css";
+import { AuthContext } from "../contexts/AuthContext";
 
-const Workflow = ({ workflow, phaseDict }) => {
+const Workflow = ({ workflow }) => {
   const groupedByPhase = workflow.reduce((acc, subtask) => {
     acc[subtask.phase] = acc[subtask.phase] || [];
     acc[subtask.phase].push(subtask);
@@ -16,6 +17,7 @@ const Workflow = ({ workflow, phaseDict }) => {
   const [loadingEvidence, setLoadingEvidence] = useState({});
   const [selectedStep, setSelectedStep] = useState(null); // Track selected step
   const [modalContent, setModalContent] = useState(null);
+  const [forceHover, setForceHover] = useState(false);
 
   // const toggleSubtask = (index) => {
   //   setExpandedSubtasks((prev) => ({
@@ -101,6 +103,13 @@ const Workflow = ({ workflow, phaseDict }) => {
   return (
     <>
       <div className="workflow-container" onClick={resetSelection}>
+        <button
+          className="force-hover-button"
+          onClick={() => setForceHover((prev) => !prev)}
+        >
+          {forceHover ? "Collapse All" : "Expand All"}
+        </button>
+
         {Object.entries(groupedByPhase).map(([phase, subtasks], phaseIndex) => (
           <div key={phase} className={`phase-row`}>
             <div className={`subtasks-wrapper `}>
@@ -156,7 +165,9 @@ const Workflow = ({ workflow, phaseDict }) => {
                     <div
                       key={subtaskIndex}
                       className={`subtask ${
-                        !selectedStep
+                        forceHover
+                          ? "force-hover"
+                          : !selectedStep
                           ? ""
                           : selectedStep.subtaskIndex !== subtaskIndex ||
                             selectedStep.phaseIndex !== phaseIndex
@@ -164,8 +175,7 @@ const Workflow = ({ workflow, phaseDict }) => {
                           : "selected"
                       }`}
                       onClick={(e) => {
-                        e.stopPropagation(); // Prevent reset on subtask click
-                        // toggleSubtask(`${phaseIndex}-${subtaskIndex}`);
+                        e.stopPropagation();
                         handleStepClick(phaseIndex, subtaskIndex);
                       }}
                     >

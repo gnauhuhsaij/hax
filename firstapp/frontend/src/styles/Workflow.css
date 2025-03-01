@@ -97,19 +97,21 @@
 .subtask {
   position: relative; /* To position .steps relative to .subtask */
   flex: 1 1 200px;
-  max-width: 26vw;
-  border-radius: 10px;
-  background: transparent;
-  padding: 18px 32px 27px 32px;
+  max-width: 20vw;
+  border-radius: 15px;
+  background: rgba(186, 186, 186, 0.1);
+  box-shadow: 2px 2px 15px 0px rgba(0, 0, 0, 0.15);
+  padding: 5px 18px 18px 18px;
 
   transition: all 0.3s ease-in-out;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 10px;
+  gap: 5px;
 }
 
-.subtask:hover {
+.subtask:hover,
+.subtask.force-hover {
   padding-bottom: 25px;
 }
 
@@ -142,7 +144,7 @@
   justify-content: center;
   min-width: 100%;
   min-height: 66px;
-  background: white;
+  background: transparent;
   transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out,
     left 0.5s linear;
   border-radius: 8px;
@@ -190,7 +192,8 @@
 }
 
 .subtask:hover .preview-icon,
-.subtask.selected .preview-icon {
+.subtask.selected .preview-icon,
+.subtask.force-hover .preview-icon {
   opacity: 0;
 }
 
@@ -201,7 +204,8 @@
 }
 
 .subtask:hover .steps-wrapper,
-.subtask.selected .steps-wrapper {
+.subtask.selected .steps-wrapper,
+.subtask.force-hover .steps-wrapper {
   max-height: 5000px;
 }
 
@@ -209,7 +213,7 @@
   top: 0px;
   position: relative; /* Take it out of the document flow */
   display: flex;
-  opacity: 1; /* Initially invisible */
+  background: rgba(255, 255, 255, 0.114);
   visibility: visible;
   max-width: 100%;
   flex-direction: column;
@@ -233,13 +237,14 @@
 }
 
 .subtask:hover .steps,
-.subtask.selected .steps {
+.subtask.selected .steps,
+.subtask.force-hover .steps {
   -webkit-animation: change-mask 0.2s forwards;
   animation-direction: normal;
   position: relative;
 }
 
-.subtask:not(:hover):not(.selected) .steps {
+.subtask:not(:hover):not(.selected):not(.force-hover) .steps {
   -webkit-animation: hide-mask 0.2s forwards;
   animation-direction: reverse;
 }
@@ -367,21 +372,6 @@
     );
   }
 }
-
-.AI {
-  background: var(
-    --status,
-    linear-gradient(107deg, #b3d9ff 13.95%, #ebb4ff 97.27%)
-  );
-}
-
-.B {
-  background: var(
-    --status,
-    linear-gradient(107deg, #ffe3b8 13.95%, #ebb4ff 97.27%)
-  );
-}
-
 /* 浮窗设计 */
 .parent-container {
   position: absolute; /* Ensure the modal is positioned relative to this container */
@@ -396,10 +386,9 @@
   padding: 0px; /* Optional: adjust padding to your needs */
   background: transparent;
 }
-
-.clear-button {
+.force-hover-button {
   position: absolute;
-  bottom: 30px;
+  top: 30px;
   right: 30px;
-  border-width: 50%;
+  background: red;
 }
