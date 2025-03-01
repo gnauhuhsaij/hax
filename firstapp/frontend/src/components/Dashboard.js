@@ -6,14 +6,28 @@ import "../styles/Dashboard.css";
 import CONFIG from '../config';
 
 const Dashboard = () => {
-  const { user, setCurrentWorkflow } = useContext(AuthContext); // Get user ID and setCurrentWorkflow from AuthContext
+  const { user, setCurrentWorkflow, setCurrentWorkflowName } =
+    useContext(AuthContext); // Get user ID and setCurrentWorkflow from AuthContext
   const [recentProjects, setRecentProjects] = useState([]);
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true); // Track loading state
+  const [isExiting, setIsExiting] = useState(false); // Track exit animation
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    setTimeout(() => {
+      setIsVisible(true);
+    }, 100); // Small delay before fade-in
+  }, []);
 
   // Fetch workflows from S3 when the component mounts
   useEffect(() => {
+    setLoading(true);
     const fetchWorkflows = async () => {
-      if (!user) return; // Ensure the user is logged in
+      if (!user) {
+        setLoading(false); // If no user, stop loading
+        return;
+      }
 
       try {
         const response = await axios.get(
@@ -23,12 +37,17 @@ const Dashboard = () => {
           }
         );
 
-        if (response.data.workflows && response.data.workflows.length > 0) {
+        if (
+          response.data.workflowsNames &&
+          response.data.workflowsNames.length > 0
+        ) {
           // Get the most recent 3 workflows
-          setRecentProjects(response.data.workflows.slice(0, 3));
+          setRecentProjects(response.data.workflowsNames.slice(0, 4));
         }
       } catch (error) {
         console.error("Error fetching workflows:", error);
+      } finally {
+        setLoading(false); // Stop loading after API call
       }
     };
 
@@ -37,6 +56,7 @@ const Dashboard = () => {
 
   const handleProjectClick = async (projectName) => {
     if (!user) return;
+
     try {
       const response = await axios.get(
         `${CONFIG.BACKEND_URL}/api/get_workflow`,
@@ -44,8 +64,13 @@ const Dashboard = () => {
       );
 
       if (response.data.workflow) {
-        setCurrentWorkflow(JSON.stringify(response.data.workflow)); // Store workflow in context
-        navigate("/start-project"); // Redirect to ProjectPage
+        setIsExiting(true); // Trigger fade-out
+
+        setTimeout(() => {
+          setCurrentWorkflow(JSON.stringify(response.data.workflow));
+          setCurrentWorkflowName(JSON.stringify(response.data.workflowName));
+          navigate("/start-project"); // Redirect after animation
+        }, 200); // Matches the CSS animation duration
       }
     } catch (error) {
       console.error("Error fetching project workflow:", error);
@@ -56,9 +81,41 @@ const Dashboard = () => {
     setCurrentWorkflow(null);
   };
 
+  if (loading) {
+    return (
+      <div
+        className={`dashboard ${
+          isExiting ? "exiting" : isVisible ? "visible" : ""
+        }`}
+      >
+        <Link to="/start-project">
+          <button className="start-project-btn">
+            <p>+ Start a project</p>
+          </button>
+        </Link>
+
+        <div className="project-section">
+          <h3>Recent</h3>
+          <div className="projects">
+            {[1, 2, 3, 4].map((index) => (
+              <div key={index} className="project-card placeholder">
+                <div className="project-header placeholder"></div>
+                <div className="project-image placeholder"></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!user) {
     return (
-      <div className="dashboard">
+      <div
+        className={`dashboard ${
+          isExiting ? "exiting" : isVisible ? "visible" : ""
+        }`}
+      >
         <Link to="/start-project">
           <button className="start-project-btn">
             <p>+ Start a project</p>
@@ -72,7 +129,11 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="dashboard">
+    <div
+      className={`dashboard ${
+        isExiting ? "exiting" : isVisible ? "visible" : ""
+      }`}
+    >
       <Link to="/start-project">
         <button
           className="start-project-btn"

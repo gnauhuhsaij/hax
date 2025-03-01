@@ -4,13 +4,21 @@ import Workflow from "./Workflow";
 import "../styles/ProjectPage.css"; // Adjust the path to the styles folder
 import { AuthContext } from "../contexts/AuthContext";
 import CONFIG from '../config';
+import { motion } from "framer-motion";
 
 const ProjectPage = () => {
-  const { user, currentWorkflow, setCurrentWorkflow } = useContext(AuthContext); // Get user ID from AuthContext
+  const {
+    user,
+    currentWorkflow,
+    setCurrentWorkflow,
+    currentWorkflowName,
+    setCurrentWorkflowName,
+  } = useContext(AuthContext); // Get user ID from AuthContext
   const [appId, setAppId] = useState(0);
   const [input, setInput] = useState("");
   const [workflow, setWorkflow] = useState(null);
   const [phaseNames, setPhaseNames] = useState(null); // Track phase names in state
+  const [workflowName, setWorkflowName] = useState(null);
   const [loading, setLoading] = useState(false); // Track loading state
   const [clickCount, setClickCount] = useState(0); // Track button clicks
   const [textPlaceHolder, setTextPlaceHolder] = useState(
@@ -19,6 +27,13 @@ const ProjectPage = () => {
   const [centerMessage, setCenterMessage] = useState(
     "Hey Lydia, what do you want to do in this project?"
   ); // Center message
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    setTimeout(() => {
+      setIsVisible(true);
+    }, 100); // Small delay before fade-in
+  }, []);
 
   useEffect(() => {
     if (currentWorkflow) {
@@ -26,15 +41,17 @@ const ProjectPage = () => {
       console.log(JSON.stringify(currentWorkflow));
       setWorkflow(JSON.parse(currentWorkflow));
     }
+    if (currentWorkflowName) setWorkflowName(JSON.parse(currentWorkflowName));
   }, [currentWorkflow]);
 
-  const uploadWorkflowToS3 = async (workflowData) => {
+  const uploadWorkflowToS3 = async (workflowData, workflowName) => {
     if (!user) return; // Ensure user is logged in
 
     try {
       await axios.post(`${CONFIG.BACKEND_URL}/api/upload_workflows`, {
         user_id: user.id, // Unique Google user ID
         workflow: workflowData,
+        workflowName: workflowName,
       });
       console.log("Workflow uploaded successfully");
     } catch (error) {
@@ -84,6 +101,14 @@ const ProjectPage = () => {
           { headers: { "Content-Type": "application/json" } }
         );
 
+        const response_workflowName = await axios.post(
+          `${CONFIG.BACKEND_URL}/api/get_name`,
+          { user_input: responses },
+          { headers: { "Content-Type": "application/json" } }
+        );
+
+        const { app_id, workflow_name } = response_workflowName.data;
+        
         const { wf, phase_names } = response2.data;
 
         const parsedWorkflow = Object.entries(wf).map(
@@ -100,9 +125,10 @@ const ProjectPage = () => {
         );
 
         setWorkflow(parsedWorkflow); // Set workflow
+        setWorkflowName(workflow_name);
         setPhaseNames(phase_names); // Set phase names
 
-        uploadWorkflowToS3(JSON.stringify(parsedWorkflow));
+        uploadWorkflowToS3(JSON.stringify(parsedWorkflow), workflow_name);
 
         // Save workflow and phase names to localStorage
         setCurrentWorkflow(JSON.stringify(parsedWorkflow));
@@ -116,12 +142,19 @@ const ProjectPage = () => {
   };
 
   return (
-    <div className="null-wrapper">
+    <div className={`null-wrapper ${isVisible ? "visible" : ""}`}>
       {!workflow ? (
         <div className="content-wrapper">
-          <div className="center-message">
+          <motion.div
+            key={centerMessage} // Triggers animation on change
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.5, ease: "easeInOut" }}
+            className="center-message"
+          >
             <h2>{centerMessage}</h2>
-          </div>
+          </motion.div>
           <div className="input-container">
             <input
               type="text"
@@ -140,7 +173,8 @@ const ProjectPage = () => {
         </div>
       ) : (
         <div className="workflow-wrapper">
-          <Workflow workflow={workflow} phaseDict={phaseNames} />
+          <div className="workflow-name">{workflowName}</div>
+          <Workflow workflow={workflow} />
         </div>
       )}
     </div>
