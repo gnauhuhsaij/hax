@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "../styles/ModalContainer.css"; // Adjust the path to the styles folder
 import axios from "axios";
+import CONFIG from '../config';
 
 const ModalContainer = ({ isLoading, step, evidence, classification }) => {
   const [chatHistory, setChatHistory] = useState([
@@ -20,7 +21,7 @@ const ModalContainer = ({ isLoading, step, evidence, classification }) => {
 
       if (!appId) {
         // First request to initialize the chat
-        response = await axios.post("http://127.0.0.1:8000/api/chat", {
+        response = await axios.post(`${CONFIG.BACKEND_URL}/api/chat`, {
           nested_tasks: step.name,
         });
 
@@ -65,7 +66,7 @@ const ModalContainer = ({ isLoading, step, evidence, classification }) => {
     setUserInput("");
 
     try {
-      const response = await axios.post("http://127.0.0.1:8000/api/chat2", {
+      const response = await axios.post(`${CONFIG.BACKEND_URL}/api/chat2`, {
         app_id: appId,
         user_response: userInput,
       });

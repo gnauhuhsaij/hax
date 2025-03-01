@@ -3,6 +3,7 @@ import axios from "axios";
 import Step from "./Step";
 import ModalContainer from "./ModalContainer";
 import "../styles/Workflow.css";
+import CONFIG from '../config';
 
 const Workflow = ({ workflow, phaseDict }) => {
   const groupedByPhase = workflow.reduce((acc, subtask) => {
@@ -27,7 +28,7 @@ const Workflow = ({ workflow, phaseDict }) => {
   const callApiForEvidence = async (name, execution) => {
     try {
       const response = await axios.post(
-        "http://127.0.0.1:8000/api/process_step",
+        `${CONFIG.BACKEND_URL}/api/process_step`,
         { name: name, execution: execution },
         {
           headers: {

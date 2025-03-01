@@ -3,6 +3,7 @@ import axios from "axios";
 import Workflow from "./Workflow";
 import "../styles/ProjectPage.css"; // Adjust the path to the styles folder
 import { AuthContext } from "../contexts/AuthContext";
+import CONFIG from '../config';
 
 const ProjectPage = () => {
   const { user, currentWorkflow, setCurrentWorkflow } = useContext(AuthContext); // Get user ID from AuthContext
@@ -31,7 +32,7 @@ const ProjectPage = () => {
     if (!user) return; // Ensure user is logged in
 
     try {
-      await axios.post("http://127.0.0.1:8000/api/upload_workflows", {
+      await axios.post(`${CONFIG.BACKEND_URL}/api/upload_workflows`, {
         user_id: user.id, // Unique Google user ID
         workflow: workflowData,
       });
@@ -48,7 +49,7 @@ const ProjectPage = () => {
     try {
       if (clickCount === 0) {
         // Simulate fetching a response from an API
-        const response = await axios.post("http://127.0.0.1:8000/api/dig", {
+        const response = await axios.post(`${CONFIG.BACKEND_URL}/api/dig`, {
           prompt: input,
         });
         const { app_id, responses } = response.data;
@@ -56,7 +57,7 @@ const ProjectPage = () => {
         setInput("");
         setCenterMessage(responses);
       } else if (clickCount === 1) {
-        const response = await axios.post("http://127.0.0.1:8000/api/dig2", {
+        const response = await axios.post(`${CONFIG.BACKEND_URL}/api/dig2`, {
           app_id: appId,
           user_response: input,
         });
@@ -64,7 +65,7 @@ const ProjectPage = () => {
         setInput("");
         setCenterMessage(responses);
       } else {
-        const response1 = await axios.post("http://127.0.0.1:8000/api/dig2", {
+        const response1 = await axios.post(`${CONFIG.BACKEND_URL}/api/dig2`, {
           app_id: appId,
           user_response: input,
         });
@@ -78,7 +79,7 @@ const ProjectPage = () => {
 
         // On the third click, make the original API call
         const response2 = await axios.post(
-          "http://127.0.0.1:8000/api/process",
+          `${CONFIG.BACKEND_URL}/api/process`,
           { user_input: responses },
           { headers: { "Content-Type": "application/json" } }
         );
