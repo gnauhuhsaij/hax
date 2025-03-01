@@ -118,3 +118,30 @@ def chat_send(app, user_response):
     # Generate a response
     return app, responses
 
+def name_workflow(prompt, model="gpt-3.5-turbo"):
+    # Initialize memory
+    workflow = StateGraph(state_schema=MessagesState)
+
+    # Check if the model is valid
+    if model not in ['gpt-3.5-turbo', 'gpt-4o']:
+        raise ValueError("Invalid model. Choose 'gpt-3.5-turbo' or 'gpt-4o'.")
+
+    chat = ChatOpenAI(model=model, temperature=0.7)
+    def call_chat(state: MessagesState):
+        system_prompt = ("""You are a helpful assistant tasked with summarizing a prompt to a few words. Your objective is to take an prompt and outputs a sentence less than 10 words summarizing the most important information in the prompt""")
+        messages = [SystemMessage(content=system_prompt)] + state["messages"]
+        response = chat.invoke(messages)
+        return {"messages": response}
+    
+    # Define the node and edge
+    workflow.add_node("model", call_chat)
+    workflow.add_edge(START, "model")
+
+    # Add simple in-memory checkpointer
+    memory = MemorySaver()
+    app = workflow.compile(checkpointer=memory)
+    responses = app.invoke(
+        {"messages": [HumanMessage(content=prompt)]},
+        config={"configurable": {"thread_id": "1"}},
+    )
+    return app, responses
