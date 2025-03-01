@@ -16,9 +16,10 @@ def upload_s3():
         data = request.json  # Get JSON data from frontend
         user_id = data.get("user_id")  # Unique Google ID
         workflow = data.get("workflow")  # Workflow data
+        workflowName = data.get("workflowName")
         if not user_id or not workflow:
             return jsonify({"error": "Missing user_id or workflow"}), 400
-        
+
         if isinstance(workflow, str):
             print("Warning: workflow is already a string. Avoiding double encoding.", flush=True)
             workflow_json = workflow  # Keep as is
@@ -26,8 +27,7 @@ def upload_s3():
             workflow_json = json.dumps(workflow)  # Convert if necessary
 
         # Generate unique filename
-        unique_id = uuid.uuid4().hex
-        s3_key = f"{user_id}/workflow_{unique_id}.json"
+        s3_key = f"{user_id}/{workflowName}/workflow_object.json"
 
         # Upload to S3
         s3_client.put_object(Bucket=S3_BUCKET_NAME, Key=s3_key, Body=workflow_json)
@@ -45,12 +45,12 @@ def get_workflow():
     if not user_id or not project_name:
         return jsonify({"error": "Missing user_id or project_name"}), 400
 
-    file_key = f"{user_id}/{project_name}"
+    file_key = f"{user_id}/{project_name}/workflow_object.json"
 
     try:
         response = s3_client.get_object(Bucket=S3_BUCKET_NAME, Key=file_key)
         workflow_data = json.loads(response["Body"].read().decode("utf-8"))
-        return jsonify({"workflow": workflow_data}), 200
+        return jsonify({"workflow": workflow_data, "workflowName": project_name}), 200
     except s3_client.exceptions.NoSuchKey:
         return jsonify({"error": "Workflow not found"}), 404
     except Exception as e:
@@ -77,9 +77,9 @@ def list_workflows():
         sorted_workflows = sorted(
             response["Contents"], key=lambda x: x["LastModified"], reverse=True
         )
-        workflow_names = [obj["Key"].split("/")[-1] for obj in sorted_workflows]
+        workflow_names = [obj["Key"].split("/")[1] for obj in sorted_workflows]
 
-        return jsonify({"workflows": workflow_names})
+        return jsonify({"workflowsNames": workflow_names})
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
