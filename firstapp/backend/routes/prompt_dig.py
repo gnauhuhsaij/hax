@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
-from services.chat_service import dig_init, chat_send, name_workflow
+from services.chat_service import dig_init, chat_send, rec_send, name_workflow
 from uuid import uuid4
+from copy import deepcopy
 
 # Store active conversations
 conversation_store = {}
@@ -49,6 +50,17 @@ def dig2():
 
     # Return the new responses to the frontend
     return jsonify({"responses": responses['messages'][-1].content})
+
+@dig_bp.route('/get_rec', methods=['POST'])
+def getRec():
+    data = request.json
+    response = data.get("response")
+    prompt = data.get("prompt")
+
+    # Generate a response using the copied app instance
+    recommendations = rec_send(response, prompt)['recommendations']
+
+    return jsonify({"recommendations": recommendations})
 
 @dig_bp.route('/get_name', methods=['POST'])
 def getName():

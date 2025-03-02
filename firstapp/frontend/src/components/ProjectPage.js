@@ -7,13 +7,8 @@ import CONFIG from '../config';
 import { motion } from "framer-motion";
 
 const ProjectPage = () => {
-  const {
-    user,
-    currentWorkflow,
-    setCurrentWorkflow,
-    currentWorkflowName,
-    setCurrentWorkflowName,
-  } = useContext(AuthContext); // Get user ID from AuthContext
+  const { user, currentWorkflow, setCurrentWorkflow, currentWorkflowName } =
+    useContext(AuthContext); // Get user ID from AuthContext
   const [appId, setAppId] = useState(0);
   const [input, setInput] = useState("");
   const [workflow, setWorkflow] = useState(null);
@@ -28,12 +23,34 @@ const ProjectPage = () => {
     "Hey Lydia, what do you want to do in this project?"
   ); // Center message
   const [isVisible, setIsVisible] = useState(false);
+  const [originalPrompt, setOriginalPrompt] = useState("AAA");
+  const [lastResponse, setLastResponse] = useState(null);
+  const [recommendations, setRecommendations] = useState([]);
 
+  //渐进渐出
   useEffect(() => {
     setTimeout(() => {
       setIsVisible(true);
     }, 100); // Small delay before fade-in
   }, []);
+
+  // Recommendations
+  useEffect(() => {
+    if (originalPrompt) {
+      axios
+        .post("http://127.0.0.1:8000/api/get_rec", {
+          response: lastResponse,
+          prompt: originalPrompt,
+        })
+        .then((res) => {
+          setRecommendations(res.data.recommendations); // Store list of recommendations
+          console.log("Recommendations:", { recommendations });
+        })
+        .catch((error) => {
+          console.error("Error fetching recommendations:", error);
+        });
+    }
+  }, [originalPrompt, lastResponse]);
 
   useEffect(() => {
     if (currentWorkflow) {
@@ -73,6 +90,8 @@ const ProjectPage = () => {
         setAppId(app_id);
         setInput("");
         setCenterMessage(responses);
+        setOriginalPrompt(input);
+        setLastResponse(responses);
       } else if (clickCount === 1) {
         const response = await axios.post(`${CONFIG.BACKEND_URL}/api/dig2`, {
           app_id: appId,
@@ -81,6 +100,7 @@ const ProjectPage = () => {
         const { responses } = response.data;
         setInput("");
         setCenterMessage(responses);
+        setLastResponse(responses);
       } else {
         const response1 = await axios.post(`${CONFIG.BACKEND_URL}/api/dig2`, {
           app_id: appId,
@@ -141,6 +161,15 @@ const ProjectPage = () => {
     }
   };
 
+  const generateRandomString = (length) => {
+    const characters =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    return Array.from(
+      { length },
+      () => characters[Math.floor(Math.random() * characters.length)]
+    ).join("");
+  };
+
   return (
     <div className={`null-wrapper ${isVisible ? "visible" : ""}`}>
       {!workflow ? (
@@ -155,6 +184,19 @@ const ProjectPage = () => {
           >
             <h2>{centerMessage}</h2>
           </motion.div>
+          <div className="recommendations-container">
+            {[0, 1].map((rowIndex) => (
+              <div key={rowIndex} className="recommendation-row">
+                {recommendations
+                  .slice(rowIndex * 2, rowIndex * 2 + 3)
+                  .map((rec, index) => (
+                    <button key={index} className="recommendation-button">
+                      {rec.length > 50 ? rec.slice(0, 50) + "..." : rec}
+                    </button>
+                  ))}
+              </div>
+            ))}
+          </div>
           <div className="input-container">
             <input
               type="text"

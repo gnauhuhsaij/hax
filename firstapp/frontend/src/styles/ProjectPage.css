@@ -106,11 +106,51 @@ body {
   letter-spacing: -0.38px;
 }
 
+.recommendations-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px; /* Space between rows */
+  align-items: center;
+  justify-content: center;
+  width: 80vw;
+  height: 10vh;
+  border-radius: 10px;
+  background: transparent;
+  position: absolute;
+  bottom: calc(30px + 8vh); /* Adjust the distance from the bottom */
+}
+
+.recommendation-row {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 15px; /* Space between buttons */
+  position: relative;
+}
+
+.recommendation-button {
+  display: inline-flex; /* Allows width to adjust dynamically */
+  padding: 0px 10px; /* Add horizontal padding */
+  border-radius: 15px;
+  background: rgba(255, 255, 255, 0.4);
+  box-shadow: 2px 2px 15px 0px rgba(0, 0, 0, 0.15);
+  font-size: 14px;
+  word-wrap: break-word;
+  cursor: pointer;
+  text-align: center;
+  white-space: normal; /* Allows text wrapping */
+  max-width: 600px; /* Ensures it doesn’t exceed 600px */
+  min-width: fit-content; /* Ensures button is as wide as necessary */
+  height: 100%;
+  overflow: hidden; /* Prevents text from overflowing */
+}
+
 .input-container {
   display: flex;
   flex-direction: row;
   align-items: center;
-  width: 60vw;
+  width: 50vw;
   height: 6vh;
   padding: 16px 17px;
   gap: 110px;
