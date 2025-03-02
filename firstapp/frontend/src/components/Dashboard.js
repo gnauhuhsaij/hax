@@ -63,13 +63,15 @@ const Dashboard = () => {
       );
 
       if (response.data.workflow) {
-        setIsExiting(true); // Trigger fade-out
+        setTimeout(() => {
+          setIsExiting(true); // Trigger fade-out
+        }, 300);
 
         setTimeout(() => {
           setCurrentWorkflow(JSON.stringify(response.data.workflow));
           setCurrentWorkflowName(JSON.stringify(response.data.workflowName));
           navigate("/start-project"); // Redirect after animation
-        }, 200); // Matches the CSS animation duration
+        }, 300); // Matches the CSS animation duration
       }
     } catch (error) {
       console.error("Error fetching project workflow:", error);
@@ -77,7 +79,12 @@ const Dashboard = () => {
   };
 
   const handleNewProject = async () => {
+    setTimeout(() => {
+      setIsExiting(true); // Trigger fade-out
+    }, 300);
+
     setCurrentWorkflow(null);
+    navigate("/start-project");
   };
 
   if (loading) {
@@ -115,11 +122,12 @@ const Dashboard = () => {
           isExiting ? "exiting" : isVisible ? "visible" : ""
         }`}
       >
-        <Link to="/start-project">
-          <button className="start-project-btn">
-            <p>+ Start a project</p>
-          </button>
-        </Link>
+        <button
+          className="start-project-btn"
+          onClick={() => handleNewProject()}
+        >
+          <p>+ Start a project</p>
+        </button>
         <div className="dashboard-center">
           <h2>Log in to unlock the full version</h2>
         </div>
@@ -133,14 +141,9 @@ const Dashboard = () => {
         isExiting ? "exiting" : isVisible ? "visible" : ""
       }`}
     >
-      <Link to="/start-project">
-        <button
-          className="start-project-btn"
-          onClick={() => handleNewProject()}
-        >
-          <p>+ Start a project</p>
-        </button>
-      </Link>
+      <button className="start-project-btn" onClick={() => handleNewProject()}>
+        <p>+ Start a project</p>
+      </button>
 
       <div className="project-section">
         <h3>Recent</h3>

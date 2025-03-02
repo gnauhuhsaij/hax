@@ -118,6 +118,52 @@ def chat_send(app, user_response):
     # Generate a response
     return app, responses
 
+def rec_send(chatbot_response, original_prompt):
+    # Define a secondary chatbot model for recommendations
+    rec_chat = ChatOpenAI(model="gpt-4o", temperature=0.7)
+
+    if len(original_prompt) < 4:
+        rec_prompt = """
+        Your task is to provide six diverse and thoughtful example responses that the user might consider to do using an app that 
+        guide users to efficiently finish tasks.
+
+        These examples should be concise yet informative, covering different angles or perspectives that 
+        a user might take when answering the question. They should consist of around 100 characters or less than 12 words.
+
+        Be speficic. Some examples are Write an essay, Make a Travel Plan, Build a website, etc.
+        
+        Format your response exactly as a list of six distinct suggestions below.
+        Recommendation 1 | Recommendataion 2 | Recommendation 3 | Recommendation 4 | Recommendation 5 | Recommendation 6
+
+        Start your recommendation directly and don't add something redundant like "Recommendation 1:".
+        """
+    else:
+        # System prompt to generate helpful recommendations
+        rec_prompt = """You are assisting a user who is unsure how to respond to an advisor's question. 
+        The advisor wants to help the user who wants to {original_prompt} . Thus, the advisor just asked the user: "{chatbot_response}".
+        
+        Your task is to provide six diverse and thoughtful example responses that the user might consider. 
+        These examples should be concise yet informative, covering different angles or perspectives that 
+        a user might take when answering the question. They should consist of around 100 characters or less than 12 words.
+        
+        Format your response exactly as a list of six distinct suggestions below.
+        Recommendation 1 | Recommendataion 2 | Recommendation 3 | Recommendation 4 | Recommendation 5 | Recommendation 6
+
+        Start your recommendation directly and don't add something redundant like "Recommendation 1:".
+        """
+
+    rec_prompt_template = ChatPromptTemplate.from_messages(
+        [("user", rec_prompt)]
+    )
+
+    parser = StrOutputParser()
+
+    # Chain to elaborate the task
+    task_elaboration_chain = rec_prompt_template | rec_chat | parser
+    elaborated_task = task_elaboration_chain.invoke({"original_prompt":original_prompt, "chatbot_response": chatbot_response})
+    
+    return {"recommendations": elaborated_task.split("|")}
+
 def name_workflow(prompt, model="gpt-3.5-turbo"):
     # Initialize memory
     workflow = StateGraph(state_schema=MessagesState)
