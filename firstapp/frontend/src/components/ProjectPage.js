@@ -22,7 +22,7 @@ const ProjectPage = () => {
     "Hey Lydia, what do you want to do in this project?"
   ); // Center message
   const [isVisible, setIsVisible] = useState(false);
-  const [originalPrompt, setOriginalPrompt] = useState("AAA");
+  const [originalPrompt, setOriginalPrompt] = useState(null);
   const [lastResponse, setLastResponse] = useState(null);
   const [recommendations, setRecommendations] = useState([]);
 
@@ -35,20 +35,18 @@ const ProjectPage = () => {
 
   // Recommendations
   useEffect(() => {
-    if (originalPrompt) {
-      axios
-        .post("http://127.0.0.1:8000/api/get_rec", {
-          response: lastResponse,
-          prompt: originalPrompt,
-        })
-        .then((res) => {
-          setRecommendations(res.data.recommendations); // Store list of recommendations
-          console.log("Recommendations:", { recommendations });
-        })
-        .catch((error) => {
-          console.error("Error fetching recommendations:", error);
-        });
-    }
+    axios
+      .post("http://127.0.0.1:8000/api/get_rec", {
+        response: lastResponse,
+        prompt: originalPrompt,
+      })
+      .then((res) => {
+        setRecommendations(res.data.recommendations); // Store list of recommendations
+        console.log("Recommendations:", { recommendations });
+      })
+      .catch((error) => {
+        console.error("Error fetching recommendations:", error);
+      });
   }, [originalPrompt, lastResponse]);
 
   useEffect(() => {
@@ -89,7 +87,7 @@ const ProjectPage = () => {
         setAppId(app_id);
         setInput("");
         setCenterMessage(responses);
-        setOriginalPrompt(input);
+        // setOriginalPrompt(input);
         setLastResponse(responses);
       } else if (clickCount === 1) {
         const response = await axios.post("http://127.0.0.1:8000/api/dig2", {
@@ -186,7 +184,7 @@ const ProjectPage = () => {
             {[0, 1].map((rowIndex) => (
               <div key={rowIndex} className="recommendation-row">
                 {recommendations
-                  .slice(rowIndex * 2, rowIndex * 2 + 3)
+                  .slice(rowIndex * 2, rowIndex * 2 + 4)
                   .map((rec, index) => (
                     <button key={index} className="recommendation-button">
                       {rec.length > 50 ? rec.slice(0, 50) + "..." : rec}

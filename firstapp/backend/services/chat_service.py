@@ -122,18 +122,18 @@ def rec_send(chatbot_response, original_prompt):
     # Define a secondary chatbot model for recommendations
     rec_chat = ChatOpenAI(model="gpt-4o", temperature=0.7)
 
-    if len(original_prompt) < 4:
+    if not original_prompt:
         rec_prompt = """
-        Your task is to provide six diverse and thoughtful example responses that the user might consider to do using an app that 
+        Your task is to provide eight diverse and thoughtful example responses that the user might consider to do using an app that 
         guide users to efficiently finish tasks.
 
         These examples should be concise yet informative, covering different angles or perspectives that 
-        a user might take when answering the question. They should consist of around 100 characters or less than 12 words.
+        a user might take when answering the question. They should consist of around 120 characters or less than 14 words.
 
         Be speficic. Some examples are Write an essay, Make a Travel Plan, Build a website, etc.
         
         Format your response exactly as a list of six distinct suggestions below.
-        Recommendation 1 | Recommendataion 2 | Recommendation 3 | Recommendation 4 | Recommendation 5 | Recommendation 6
+        Recommendation 1 | Recommendataion 2 | Recommendation 3 | Recommendation 4 | Recommendation 5 | Recommendation 6 | Recommendation 7 | Recommendation 8
 
         Start your recommendation directly and don't add something redundant like "Recommendation 1:".
         """
