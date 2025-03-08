@@ -7,7 +7,7 @@ from config.settings import LANGCHAIN_MODEL, OPENAI_ORGANIZATION
 from services.task_utils import get_secret, list2string, transform_to_dict, find_phase_for_subtask
 from openai import OpenAI
 
-OpenAI.proxy = "http://127.0.0.1:7897"
+# OpenAI.proxy = "http://127.0.0.1:7897"
 
 api_key = get_secret()
 os.environ["OPENAI_API_KEY"] = api_key
