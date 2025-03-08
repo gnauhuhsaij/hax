@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { AuthContext } from "../contexts/AuthContext"; // Import AuthContext
 import "../styles/Dashboard.css";
+import CONFIG from '../config';
 
 const Dashboard = () => {
   const { user, setCurrentWorkflow, setCurrentWorkflowName } =
@@ -30,7 +31,7 @@ const Dashboard = () => {
 
       try {
         const response = await axios.get(
-          "http://127.0.0.1:8000/api/list_workflows",
+          `${CONFIG.BACKEND_URL}/api/list_workflows`,
           {
             params: { user_id: user.id }, // Send user ID to backend
           }
@@ -58,7 +59,7 @@ const Dashboard = () => {
 
     try {
       const response = await axios.get(
-        "http://127.0.0.1:8000/api/get_workflow",
+        `${CONFIG.BACKEND_URL}/api/get_workflow`,
         { params: { user_id: user.id, project_name: projectName } }
       );
 

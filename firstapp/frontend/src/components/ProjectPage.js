@@ -4,6 +4,7 @@ import Workflow from "./Workflow";
 import "../styles/ProjectPage.css"; // Adjust the path to the styles folder
 import { AuthContext } from "../contexts/AuthContext";
 import { motion } from "framer-motion";
+import CONFIG from '../config';
 
 const ProjectPage = () => {
   const { user, currentWorkflow, setCurrentWorkflow, currentWorkflowName } =
@@ -36,7 +37,7 @@ const ProjectPage = () => {
   // Recommendations
   useEffect(() => {
     axios
-      .post("http://127.0.0.1:8000/api/get_rec", {
+      .post(`${CONFIG.BACKEND_URL}/api/get_rec`, {
         response: lastResponse,
         prompt: originalPrompt,
       })
@@ -62,7 +63,7 @@ const ProjectPage = () => {
     if (!user) return; // Ensure user is logged in
 
     try {
-      await axios.post("http://127.0.0.1:8000/api/upload_workflows", {
+      await axios.post(`${CONFIG.BACKEND_URL}/api/upload_workflows`, {
         user_id: user.id, // Unique Google user ID
         workflow: workflowData,
         workflowName: workflowName,
@@ -80,7 +81,7 @@ const ProjectPage = () => {
     try {
       if (clickCount === 0) {
         // Simulate fetching a response from an API
-        const response = await axios.post("http://127.0.0.1:8000/api/dig", {
+        const response = await axios.post(`${CONFIG.BACKEND_URL}/api/dig`, {
           prompt: input,
         });
         const { app_id, responses } = response.data;
@@ -90,7 +91,7 @@ const ProjectPage = () => {
         // setOriginalPrompt(input);
         setLastResponse(responses);
       } else if (clickCount === 1) {
-        const response = await axios.post("http://127.0.0.1:8000/api/dig2", {
+        const response = await axios.post(`${CONFIG.BACKEND_URL}/api/dig2`, {
           app_id: appId,
           user_response: input,
         });
@@ -99,7 +100,7 @@ const ProjectPage = () => {
         setCenterMessage(responses);
         setLastResponse(responses);
       } else {
-        const response1 = await axios.post("http://127.0.0.1:8000/api/dig2", {
+        const response1 = await axios.post(`${CONFIG.BACKEND_URL}/api/dig2`, {
           app_id: appId,
           user_response: input,
         });
@@ -113,13 +114,13 @@ const ProjectPage = () => {
 
         // On the third click, make the original API call
         const response2 = await axios.post(
-          "http://127.0.0.1:8000/api/process",
+          `${CONFIG.BACKEND_URL}/api/process`,
           { user_input: responses },
           { headers: { "Content-Type": "application/json" } }
         );
 
         const response_workflowName = await axios.post(
-          "http://127.0.0.1:8000/api/get_name",
+          `${CONFIG.BACKEND_URL}/api/get_name`,
           { user_input: responses },
           { headers: { "Content-Type": "application/json" } }
         );
