@@ -74,22 +74,26 @@ const Workflow = ({ workflow }) => {
 
     // Fetch evidence data
     const evidenceItem = await callApiForEvidence(step.name, step.execution);
-    setEvidence((prev) => ({
-      ...prev,
-      [evidenceKey]: evidenceItem,
-    }));
 
+    // Update evidence and ensure modal updates after state is applied
+    setEvidence((prev) => {
+      const updatedEvidence = { ...prev, [evidenceKey]: evidenceItem };
+
+      // Ensure modal update happens after state update
+      setModalContent(
+        <ModalContainer
+          isLoading={false}
+          step={step}
+          evidence={updatedEvidence[evidenceKey]} // Now it is correctly updated
+          classification={step.classification}
+        />
+      );
+
+      return updatedEvidence;
+    });
+
+    // Update loading state
     setLoadingEvidence((prev) => ({ ...prev, [evidenceKey]: false }));
-
-    // Update modal with evidence data
-    setModalContent(
-      <ModalContainer
-        isLoading={false}
-        step={step}
-        evidence={evidence[evidenceKey] || []}
-        classification={step.classification}
-      />
-    );
   };
 
   const resetSelection = () => {

@@ -20,12 +20,18 @@ const ProjectPage = () => {
     "Tell us a task that you want to do in one sentence, and we will figure it out steps by steps!"
   );
   const [centerMessage, setCenterMessage] = useState(
-    "Hey Lydia, what do you want to do in this project?"
+    `Hey ${(user?.name?.split(" ")[0] || "Lydia").slice(
+      0,
+      12
+    )}, what do you want to do in this project?`
   ); // Center message
+  const [formattedMessage, setFormattedMessage] = useState([]);
   const [isVisible, setIsVisible] = useState(false);
   const [originalPrompt, setOriginalPrompt] = useState(null);
   const [lastResponse, setLastResponse] = useState(null);
   const [recommendations, setRecommendations] = useState([]);
+  const [loadingRecommendations, setLoadingRecommendations] = useState(false);
+  const [promptTags, setPromptTags] = useState([]);
 
   //渐进渐出
   useEffect(() => {
@@ -36,6 +42,7 @@ const ProjectPage = () => {
 
   // Recommendations
   useEffect(() => {
+    setLoadingRecommendations(true);
     axios
       .post(`${CONFIG.BACKEND_URL}/api/get_rec`, {
         response: lastResponse,
@@ -47,8 +54,11 @@ const ProjectPage = () => {
       })
       .catch((error) => {
         console.error("Error fetching recommendations:", error);
+      })
+      .finally(() => {
+        setLoadingRecommendations(false);
       });
-  }, [originalPrompt, lastResponse]);
+  }, [lastResponse]);
 
   useEffect(() => {
     if (currentWorkflow) {
@@ -143,7 +153,6 @@ const ProjectPage = () => {
 
         setWorkflow(parsedWorkflow); // Set workflow
         setWorkflowName(workflow_name);
-        setPhaseNames(phase_names); // Set phase names
 
         uploadWorkflowToS3(JSON.stringify(parsedWorkflow), workflow_name);
 
@@ -158,14 +167,30 @@ const ProjectPage = () => {
     }
   };
 
-  const generateRandomString = (length) => {
-    const characters =
-      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    return Array.from(
-      { length },
-      () => characters[Math.floor(Math.random() * characters.length)]
-    ).join("");
+  const handleTagToggle = (rec) => {
+    setPromptTags(
+      (prevTags) =>
+        prevTags.includes(rec)
+          ? prevTags.filter((tag) => tag !== rec) // Remove if already selected
+          : [...prevTags, rec] // Add if not selected
+    );
   };
+
+  useEffect(() => {
+    const userName = (user?.name?.split(" ")[0] || "Lydia").slice(0, 12);
+    const words = centerMessage.split(" ").map((word, index) =>
+      word === userName + "," ? (
+        <>
+          <strong key={index}>&nbsp;{word.split(",")[0]}</strong>
+          <span>,</span>
+        </>
+      ) : (
+        <span key={index}> {word} </span>
+      )
+    );
+
+    setFormattedMessage(words);
+  }, [centerMessage, user]);
 
   return (
     <div className={`null-wrapper ${isVisible ? "visible" : ""}`}>
@@ -179,21 +204,89 @@ const ProjectPage = () => {
             transition={{ duration: 0.5, ease: "easeInOut" }}
             className="center-message"
           >
-            <h2>{centerMessage}</h2>
+            <h2>{formattedMessage}</h2>
           </motion.div>
-          <div className="recommendations-container">
+          <div className="promptTags">
             {[0, 1].map((rowIndex) => (
-              <div key={rowIndex} className="recommendation-row">
-                {recommendations
-                  .slice(rowIndex * 2, rowIndex * 2 + 4)
-                  .map((rec, index) => (
-                    <button key={index} className="recommendation-button">
-                      {rec.length > 50 ? rec.slice(0, 50) + "..." : rec}
-                    </button>
-                  ))}
+              <div
+                key={rowIndex}
+                className={`promptTags-row ${
+                  rowIndex === 1 && promptTags.length <= 4 ? "hidden-row" : ""
+                }`}
+              >
+                {Array(4)
+                  .fill(null)
+                  .map((_, index) => {
+                    const tagIndex = rowIndex * 4 + index;
+                    return tagIndex < promptTags.length ? (
+                      <button
+                        key={tagIndex}
+                        className="promptTag selected"
+                        onClick={() => handleTagToggle(promptTags[tagIndex])}
+                      >
+                        {promptTags[tagIndex].length > 50
+                          ? promptTags[tagIndex].slice(0, 50) + "..."
+                          : promptTags[tagIndex]}
+                      </button>
+                    ) : (
+                      <div
+                        key={`empty-${rowIndex}-${index}`}
+                        className="empty-space"
+                      ></div>
+                    );
+                  })}
               </div>
             ))}
           </div>
+
+          {loadingRecommendations ? (
+            <div className="recommendations-container">
+              {[0, 1].map((rowIndex) => (
+                <div key={rowIndex} className="recommendation-row">
+                  {[
+                    "Placeholder rec 1 ............",
+                    "Placeholder rec 2 .....",
+                    "Placeholder rec 3 ........... ",
+                    "Placeholder rec 4...",
+                    "Placeholder rec 5 ............... ",
+                    "Pl rec 6",
+                    "Placeholder rec........... 7",
+                    "Placeholderrec 8",
+                  ]
+                    .slice(rowIndex * 4, rowIndex * 4 + 4)
+                    .map((placeholder, index) => (
+                      <button key={index} className="recommendation-button">
+                        {placeholder}
+                      </button>
+                    ))}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="recommendations-container">
+              {[0, 1].map((rowIndex) => (
+                <div key={rowIndex} className="recommendation-row">
+                  {recommendations
+                    .slice(rowIndex * 4, rowIndex * 4 + 4)
+                    .map((rec, index) => {
+                      const isSelected = promptTags.includes(rec);
+                      return (
+                        <button
+                          key={index}
+                          className={`recommendation-button ${
+                            isSelected ? "selected" : ""
+                          }`}
+                          onClick={() => handleTagToggle(rec)}
+                        >
+                          {rec.length > 50 ? rec.slice(0, 50) + "..." : rec}
+                        </button>
+                      );
+                    })}
+                </div>
+              ))}
+            </div>
+          )}
+
           <div className="input-container">
             <input
               type="text"
