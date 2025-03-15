@@ -6,3 +6,5 @@ langchain-openai==0.3.6
 langgraph==0.2.74
 langgraph-checkpoint==2.0.10
 langgraph-sdk==0.1.51
+python-dotenv
+pinecone-client
