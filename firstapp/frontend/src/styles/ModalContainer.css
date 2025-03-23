@@ -11,15 +11,15 @@
   position: relative;
   display: flex;
   width: 45vw;
-  height: 86vh;
+  height: calc(94vh - 100px);
   flex-direction: column; /* Fix typo from `justify-content: column` */
   justify-content: flex-start;
   border-radius: 20px;
   background: #fff;
   box-shadow: 0px 2px 40px 0px rgba(0, 0, 0, 0.1);
   z-index: 1000;
-  margin-top: 7vh;
-  padding: 3vh 2vw 0vh 5vw;
+  margin-top: 3vh;
+  padding: 3vh 2vw 0vh 2vw;
   gap: 2px;
   overflow-x: hidden;
   transition: transform 0.3s ease-in-out;
@@ -156,7 +156,7 @@
 
 /* WEB */
 .evidence-container {
-  width: 32vw;
+  width: 100%;
   display: flex;
   flex-direction: column;
   padding: 12px 14px;
@@ -164,7 +164,7 @@
   align-content: flex-start;
   gap: 2px;
   align-self: stretch;
-  flex-wrap: wrap;
+  /* flex-wrap: wrap; */
 
   border-radius: 10px;
   background: #fff;
@@ -173,7 +173,7 @@
 
 .evidence-container:focus {
   outline: none;
-  background-color: #00000011;
+  /* background-color: #00000011; */
   box-shadow: 0px 2px 8px 0px rgba(0, 0, 0, 0.283);
 }
 
@@ -232,17 +232,55 @@
 }
 
 .evidence-snippet {
-  width: 90%;
+  width: 100%;
   font-size: 10px;
   color: #555;
+}
+
+.retrieved-evidences {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.retrieved-evidence {
+  width: 100%;
+  font-size: 12px;
+  background-color: #f2f0f0;
+  color: black;
+  border-radius: 5px;
+  padding: 10px 14px;
+  /* Ensures long words don't overflow */
+}
+
+.retrieved-evidence-text {
+  width: 80%;
+  font-weight: 600;
+  overflow: hidden;
+  display: -webkit-box;
+  line-clamp: 3;
+  -webkit-line-clamp: 3; /* Adjust based on how many lines should be visible */
+  -webkit-box-orient: vertical;
+  text-overflow: ellipsis;
+  word-break: break-word;
 }
 
 .button-container {
   height: 12%;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+}
+
+.lastRow {
+  position: relative;
+  width: 100%;
+  height: 30px;
+  padding-top: 1%;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
 }
 
 .save-button {
@@ -321,4 +359,13 @@
 .placeholder-content p {
   font-size: 14px;
   color: #555;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }

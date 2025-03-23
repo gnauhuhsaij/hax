@@ -4,9 +4,9 @@ import Step from "./Step";
 import ModalContainer from "./ModalContainer";
 import "../styles/Workflow.css";
 import { AuthContext } from "../contexts/AuthContext";
-import CONFIG from '../config';
+import CONFIG from "../config";
 
-const Workflow = ({ workflow }) => {
+const Workflow = ({ workflow, workflowName }) => {
   const groupedByPhase = workflow.reduce((acc, subtask) => {
     acc[subtask.phase] = acc[subtask.phase] || [];
     acc[subtask.phase].push(subtask);
@@ -18,7 +18,6 @@ const Workflow = ({ workflow }) => {
   const [loadingEvidence, setLoadingEvidence] = useState({});
   const [selectedStep, setSelectedStep] = useState(null); // Track selected step
   const [modalContent, setModalContent] = useState(null);
-  const [forceHover, setForceHover] = useState(false);
 
   // const toggleSubtask = (index) => {
   //   setExpandedSubtasks((prev) => ({
@@ -58,7 +57,8 @@ const Workflow = ({ workflow }) => {
     step,
     phaseIndex,
     subtaskIndex,
-    stepIndex
+    stepIndex,
+    subtask
   ) => {
     const evidenceKey = `${phaseIndex}-${subtaskIndex}-${stepIndex}`;
 
@@ -67,6 +67,7 @@ const Workflow = ({ workflow }) => {
       <ModalContainer
         isLoading={true}
         step={step}
+        context={[]}
         evidence={[]}
         classification={step.classification}
       />
@@ -84,6 +85,7 @@ const Workflow = ({ workflow }) => {
         <ModalContainer
           isLoading={false}
           step={step}
+          context={`${step.name} for ${subtask.description} for ${workflowName}`}
           evidence={updatedEvidence[evidenceKey]} // Now it is correctly updated
           classification={step.classification}
         />
@@ -108,13 +110,6 @@ const Workflow = ({ workflow }) => {
   return (
     <>
       <div className="workflow-container" onClick={resetSelection}>
-        <button
-          className="force-hover-button"
-          onClick={() => setForceHover((prev) => !prev)}
-        >
-          {forceHover ? "Collapse All" : "Expand All"}
-        </button>
-
         {Object.entries(groupedByPhase).map(([phase, subtasks], phaseIndex) => (
           <div key={phase} className={`phase-row`}>
             <div className={`subtasks-wrapper `}>
@@ -170,9 +165,7 @@ const Workflow = ({ workflow }) => {
                     <div
                       key={subtaskIndex}
                       className={`subtask ${
-                        forceHover
-                          ? "force-hover"
-                          : !selectedStep
+                        !selectedStep
                           ? ""
                           : selectedStep.subtaskIndex !== subtaskIndex ||
                             selectedStep.phaseIndex !== phaseIndex
@@ -186,13 +179,6 @@ const Workflow = ({ workflow }) => {
                     >
                       <h2 className="subtask-card">
                         <h3>{subtask.description}</h3>
-                        <div className="subtask-preview">
-                          <img
-                            src="/icons/downarrow.png"
-                            alt="Send"
-                            className="preview-icon"
-                          />
-                        </div>
                       </h2>
                       {
                         <div className="steps-wrapper">
@@ -212,7 +198,8 @@ const Workflow = ({ workflow }) => {
                                       step,
                                       phaseIndex,
                                       subtaskIndex,
-                                      stepIndex
+                                      stepIndex,
+                                      subtask
                                     )
                                   }
                                   evidence={evidence[evidenceKey]}

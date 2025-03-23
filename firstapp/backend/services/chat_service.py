@@ -118,7 +118,7 @@ def chat_send(app, user_response):
     # Generate a response
     return app, responses
 
-def rec_send(chatbot_response, original_prompt):
+def rec_send(dig_history, original_prompt):
     # Define a secondary chatbot model for recommendations
     rec_chat = ChatOpenAI(model="gpt-4o", temperature=0.7)
 
@@ -140,11 +140,11 @@ def rec_send(chatbot_response, original_prompt):
     else:
         # System prompt to generate helpful recommendations
         rec_prompt = """You are assisting a user who is unsure how to respond to an advisor's question. 
-        The advisor wants to help the user who wants to {original_prompt} . Thus, the advisor just asked the user: "{chatbot_response}".
+        The advisor wants to help the user who wants to {original_prompt} . This is their current conversation: "{dig_history}".
         
         Your task is to provide six diverse and thoughtful example responses that the user might consider. 
         These examples should be concise yet informative, covering different angles or perspectives that 
-        a user might take when answering the question. They should consist of around 100 characters or less than 12 words.
+        a user might take when answering the question. They should consist of around 100 characters or less than 12 words without using semicolon.
         
         Format your response exactly as a list of six distinct suggestions below.
         Recommendation 1 | Recommendataion 2 | Recommendation 3 | Recommendation 4 | Recommendation 5 | Recommendation 6
@@ -160,7 +160,7 @@ def rec_send(chatbot_response, original_prompt):
 
     # Chain to elaborate the task
     task_elaboration_chain = rec_prompt_template | rec_chat | parser
-    elaborated_task = task_elaboration_chain.invoke({"original_prompt":original_prompt, "chatbot_response": chatbot_response})
+    elaborated_task = task_elaboration_chain.invoke({"original_prompt":original_prompt, "dig_history": dig_history})
     
     return {"recommendations": elaborated_task.split("|")}
 

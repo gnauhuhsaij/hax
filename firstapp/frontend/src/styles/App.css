@@ -3,7 +3,7 @@
   background: inherit;
   display: flex;
   flex-direction: row; /* Row layout for two side-by-side areas */
-  height: 100vh; /* Full screen height */
+  min-height: 100vh;
   width: 100vw;
   gap: 0px;
   overflow: hidden; /* Prevent scrolling */
@@ -16,7 +16,7 @@
   flex: 1; /* Take up remaining space */
   flex-grow: 1;
   padding: 0px;
-  overflow-y: hidden; /* Scroll content if needed */
+  overflow-y: auto;
   display: flex;
   flex-direction: column; /* Ensure column layout inside */
   justify-content: flex-start;

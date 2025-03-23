@@ -4,7 +4,7 @@ import Workflow from "./Workflow";
 import "../styles/ProjectPage.css"; // Adjust the path to the styles folder
 import { AuthContext } from "../contexts/AuthContext";
 import { motion } from "framer-motion";
-import CONFIG from '../config';
+import CONFIG from "../config";
 
 const ProjectPage = () => {
   const { user, currentWorkflow, setCurrentWorkflow, currentWorkflowName } =
@@ -28,7 +28,7 @@ const ProjectPage = () => {
   const [formattedMessage, setFormattedMessage] = useState([]);
   const [isVisible, setIsVisible] = useState(false);
   const [originalPrompt, setOriginalPrompt] = useState(null);
-  const [lastResponse, setLastResponse] = useState(null);
+  const [digHistory, setDigHistory] = useState(null);
   const [recommendations, setRecommendations] = useState([]);
   const [loadingRecommendations, setLoadingRecommendations] = useState(false);
   const [promptTags, setPromptTags] = useState([]);
@@ -45,12 +45,16 @@ const ProjectPage = () => {
     setLoadingRecommendations(true);
     axios
       .post(`${CONFIG.BACKEND_URL}/api/get_rec`, {
-        response: lastResponse,
+        response: digHistory,
         prompt: originalPrompt,
       })
       .then((res) => {
         setRecommendations(res.data.recommendations); // Store list of recommendations
-        console.log("Recommendations:", { recommendations });
+        console.log("Recommendations:", {
+          recommendations,
+          digHistory,
+          originalPrompt,
+        });
       })
       .catch((error) => {
         console.error("Error fetching recommendations:", error);
@@ -58,7 +62,7 @@ const ProjectPage = () => {
       .finally(() => {
         setLoadingRecommendations(false);
       });
-  }, [lastResponse]);
+  }, [digHistory]);
 
   useEffect(() => {
     if (currentWorkflow) {
@@ -90,7 +94,6 @@ const ProjectPage = () => {
 
     try {
       if (clickCount === 0) {
-        // Simulate fetching a response from an API
         const response = await axios.post(`${CONFIG.BACKEND_URL}/api/dig`, {
           prompt: input,
         });
@@ -98,8 +101,8 @@ const ProjectPage = () => {
         setAppId(app_id);
         setInput("");
         setCenterMessage(responses);
-        // setOriginalPrompt(input);
-        setLastResponse(responses);
+        setOriginalPrompt(input);
+        setDigHistory(`AgentQuestion: ${responses}\nUser response: ${input}`);
       } else if (clickCount === 1) {
         const response = await axios.post(`${CONFIG.BACKEND_URL}/api/dig2`, {
           app_id: appId,
@@ -108,7 +111,10 @@ const ProjectPage = () => {
         const { responses } = response.data;
         setInput("");
         setCenterMessage(responses);
-        setLastResponse(responses);
+        setDigHistory(
+          (prev) =>
+            `${prev}\nAgentQuestion: ${responses}\nUser response: ${input}`
+        );
       } else {
         const response1 = await axios.post(`${CONFIG.BACKEND_URL}/api/dig2`, {
           app_id: appId,
@@ -255,7 +261,10 @@ const ProjectPage = () => {
                   ]
                     .slice(rowIndex * 4, rowIndex * 4 + 4)
                     .map((placeholder, index) => (
-                      <button key={index} className="recommendation-button">
+                      <button
+                        key={index}
+                        className="recommendation-button loading"
+                      >
                         {placeholder}
                       </button>
                     ))}
@@ -306,7 +315,7 @@ const ProjectPage = () => {
       ) : (
         <div className="workflow-wrapper">
           <div className="workflow-name">{workflowName}</div>
-          <Workflow workflow={workflow} />
+          <Workflow workflow={workflow} workflowName={workflowName} />
         </div>
       )}
     </div>

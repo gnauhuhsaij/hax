@@ -1,9 +1,15 @@
 import React, { useState, useEffect } from "react";
 import "../styles/ModalContainer.css"; // Adjust the path to the styles folder
 import axios from "axios";
-import CONFIG from '../config';
+import CONFIG from "../config";
 
-const ModalContainer = ({ isLoading, step, evidence, classification }) => {
+const ModalContainer = ({
+  isLoading,
+  step,
+  context,
+  evidence,
+  classification,
+}) => {
   const [chatHistory, setChatHistory] = useState([
     {
       sender: "agent",
@@ -14,6 +20,44 @@ const ModalContainer = ({ isLoading, step, evidence, classification }) => {
   const [appId, setAppId] = useState(null); // Store app_id for the session
   const [selectedLink, setSelectedLink] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [responses, setResponses] = useState({});
+  const [fetchLoading, setFetchLoading] = useState(Array(10).fill(false));
+
+  const fetchEvidence = async (link, index) => {
+    setFetchLoading((prev) => {
+      const newLoading = [...prev];
+      newLoading[index] = true;
+      return newLoading;
+    });
+    try {
+      console.log(context);
+      console.log(link);
+      const response = await axios.post(`${CONFIG.BACKEND_URL}/api/scrape`, {
+        prompt: context, // Send context as prompt
+        url: link, // Send URL for scraping
+      });
+      console.log(response.data.evidence);
+
+      if (response.status === 200) {
+        setResponses((prev) => ({
+          ...prev,
+          [index]: response.data.evidence, // Store response for this evidence item
+        }));
+      }
+    } catch (error) {
+      console.error("Error fetching evidence:", error);
+      setResponses((prev) => ({
+        ...prev,
+        [index]: ["Failed to retrieve evidence."], // Display an error message
+      }));
+    } finally {
+      setFetchLoading((prev) => {
+        const newLoading = [...prev];
+        newLoading[index] = false;
+        return newLoading;
+      });
+    }
+  };
 
   const sendMessage = async () => {
     try {
@@ -222,6 +266,64 @@ const ModalContainer = ({ isLoading, step, evidence, classification }) => {
                     </div>
                     <div className="evidence-title">{item.title}</div>
                     <div className="evidence-snippet">{item.snippet}</div>
+                    <div className="lastRow">
+                      <button
+                        className="preview-button"
+                        style={{
+                          position: "absolute",
+                          left: "0px",
+                          borderRadius: "250px",
+                          background: "#f2f0f0",
+                          width: "15%",
+                          padding: "10px",
+                          fontSize: "12px",
+                          fontWeight: "800",
+                        }}
+                      >
+                        Preview
+                      </button>
+                      <button
+                        key={index}
+                        className="fetch-evidence-button"
+                        onClick={() => fetchEvidence(item.link, index)}
+                        disabled={fetchLoading[index]} // Disable button when loading
+                        style={{
+                          borderRadius: "5px",
+                          color: fetchLoading[index] ? "#555" : "#aaa8a8",
+                          width: "10%",
+                          padding: "10px",
+                          fontSize: "12px",
+                          cursor: fetchLoading[index]
+                            ? "not-allowed"
+                            : "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        {fetchLoading[index] ? (
+                          <span
+                            className="spinner"
+                            style={{ animation: "spin 1s linear infinite" }}
+                          >
+                            ⚙️
+                          </span>
+                        ) : (
+                          "Fetch"
+                        )}
+                      </button>
+                    </div>
+                    {responses[index] && (
+                      <div className="retrieved-evidences">
+                        {responses[index].map((text, i) => (
+                          <div className="retrieved-evidence">
+                            <div className="retrieved-evidence-text">
+                              <p key={i}>{text.text}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ))
               : "Click the role circle to fetch evidence."}

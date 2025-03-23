@@ -91,13 +91,13 @@
   justify-content: center;
   align-items: flex-start;
   transition: transform 0.1s;
+  width: 100%;
   gap: 30px;
 }
 
 .subtask {
   position: relative; /* To position .steps relative to .subtask */
-  flex: 1 1 200px;
-  max-width: 20vw;
+  width: 30%;
   border-radius: 15px;
   background: rgba(186, 186, 186, 0.1);
   box-shadow: 2px 2px 15px 0px rgba(0, 0, 0, 0.15);
@@ -184,31 +184,6 @@
   align-items: flex-end;
 }
 
-.preview-icon {
-  width: 20px;
-  height: 20px;
-  opacity: 0.3;
-  transition: opacity 0.3s ease, visibility 0.3s ease;
-}
-
-.subtask:hover .preview-icon,
-.subtask.selected .preview-icon,
-.subtask.force-hover .preview-icon {
-  opacity: 0;
-}
-
-.steps-wrapper {
-  position: relative;
-  max-height: 40px;
-  transition: max-height 0.2s ease-in-out;
-}
-
-.subtask:hover .steps-wrapper,
-.subtask.selected .steps-wrapper,
-.subtask.force-hover .steps-wrapper {
-  max-height: 5000px;
-}
-
 .steps {
   top: 0px;
   position: relative; /* Take it out of the document flow */
@@ -220,28 +195,12 @@
   justify-content: center;
   align-items: center;
   gap: 8px;
-  /* clip-path: inset(0 0 calc(100% - 20px) 0); */
-  -webkit-mask-image: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0.7) 0%,
-    rgba(0, 0, 0, 0.4) 10px,
-    rgba(0, 0, 0, 0.15) 20px,
-    rgba(0, 0, 0, 0) 40px,
-    rgba(0, 0, 0, 0) 100%
-  );
-  padding: 5px;
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  transition: all 0.6s ease-in-out;
-  z-index: 5; /* Bring steps to the front */
+  padding: 2px 5px;
+  z-index: 5;
 }
 
-.subtask:hover .steps,
-.subtask.selected .steps,
-.subtask.force-hover .steps {
-  -webkit-animation: change-mask 0.2s forwards;
-  animation-direction: normal;
-  position: relative;
+.subtask-placeholder .steps {
+  opacity: 0;
 }
 
 .subtask:not(:hover):not(.selected):not(.force-hover) .steps {
@@ -249,129 +208,6 @@
   animation-direction: reverse;
 }
 
-@keyframes change-mask {
-  0% {
-    -webkit-mask-image: linear-gradient(
-      to bottom,
-      rgba(0, 0, 0, 0.7) 0%,
-      rgba(0, 0, 0, 0.4) 10px,
-      rgba(0, 0, 0, 0.15) 20px,
-      rgba(0, 0, 0, 0) 40px,
-      rgba(0, 0, 0, 0) 100%
-    );
-  }
-  25% {
-    -webkit-mask-image: linear-gradient(
-      to bottom,
-      rgba(0, 0, 0, 0.8) 0%,
-      rgba(0, 0, 0, 0.6) 10px,
-      rgba(0, 0, 0, 0.4) 25%,
-      rgba(0, 0, 0, 0) 26%,
-      rgba(0, 0, 0, 0) 100%
-    );
-  }
-  30% {
-    -webkit-mask-image: linear-gradient(
-      to bottom,
-      rgba(0, 0, 0, 0.9) 0%,
-      rgba(0, 0, 0, 0.8) 10px,
-      rgba(0, 0, 0, 0.7) 50%,
-      rgba(0, 0, 0, 0) 51%,
-      rgba(0, 0, 0, 0) 100%
-    );
-  }
-  40% {
-    -webkit-mask-image: linear-gradient(
-      to bottom,
-      rgba(0, 0, 0, 0.9) 0%,
-      rgba(0, 0, 0, 0.9) 10px,
-      rgba(0, 0, 0, 0.8) 75%,
-      rgba(0, 0, 0, 0) 76%,
-      rgba(0, 0, 0, 0) 100%
-    );
-  }
-  45% {
-    -webkit-mask-image: linear-gradient(
-      to bottom,
-      rgba(0, 0, 0, 1) 0%,
-      rgba(0, 0, 0, 1) 10px,
-      rgba(0, 0, 0, 0.9) 90%,
-      rgba(0, 0, 0, 0) 91%,
-      rgba(0, 0, 0, 0) 100%
-    );
-  }
-  50% {
-    -webkit-mask-image: linear-gradient(
-      to bottom,
-      rgba(0, 0, 0, 1) 0%,
-      rgba(0, 0, 0, 1) 100%
-    );
-  }
-  100% {
-    -webkit-mask-image: linear-gradient(
-      to bottom,
-      rgba(0, 0, 0, 1) 0%,
-      rgba(0, 0, 0, 1) 100%
-    );
-  }
-}
-
-@keyframes hide-mask {
-  00% {
-    -webkit-mask-image: linear-gradient(
-      to bottom,
-      rgba(0, 0, 0, 0.7) 0%,
-      rgba(0, 0, 0, 0.4) 10px,
-      rgba(0, 0, 0, 0.15) 20px,
-      rgba(0, 0, 0, 0) 40px,
-      rgba(0, 0, 0, 0) 100%
-    );
-  }
-  25% {
-    -webkit-mask-image: linear-gradient(
-      to bottom,
-      rgba(0, 0, 0, 0.8) 0%,
-      rgba(0, 0, 0, 0.6) 10px,
-      rgba(0, 0, 0, 0.4) 25%,
-      rgba(0, 0, 0, 0) 26%,
-      rgba(0, 0, 0, 0) 100%
-    );
-  }
-  30% {
-    -webkit-mask-image: linear-gradient(
-      to bottom,
-      rgba(0, 0, 0, 0.9) 0%,
-      rgba(0, 0, 0, 0.8) 10px,
-      rgba(0, 0, 0, 0.7) 50%,
-      rgba(0, 0, 0, 0) 51%,
-      rgba(0, 0, 0, 0) 100%
-    );
-  }
-  35% {
-    -webkit-mask-image: linear-gradient(
-      to bottom,
-      rgba(0, 0, 0, 0.9) 0%,
-      rgba(0, 0, 0, 0.9) 10px,
-      rgba(0, 0, 0, 0.8) 75%,
-      rgba(0, 0, 0, 0) 76%,
-      rgba(0, 0, 0, 0) 100%
-    );
-  }
-  40% {
-    -webkit-mask-image: linear-gradient(
-      to bottom,
-      rgba(0, 0, 0, 1) 0%,
-      rgba(0, 0, 0, 1) 100%
-    );
-  }
-  100% {
-    -webkit-mask-image: linear-gradient(
-      to bottom,
-      rgba(0, 0, 0, 1) 0%,
-      rgba(0, 0, 0, 1) 100%
-    );
-  }
-}
 /* 浮窗设计 */
 .parent-container {
   position: absolute; /* Ensure the modal is positioned relative to this container */
@@ -381,11 +217,12 @@
   align-items: center;
   width: 60vw;
   height: 100vh;
-  top: 0;
-  left: 40vw;
+  top: 100px;
+  right: 0vw;
   padding: 0px; /* Optional: adjust padding to your needs */
   background: transparent;
 }
+
 .force-hover-button {
   position: absolute;
   top: 30px;

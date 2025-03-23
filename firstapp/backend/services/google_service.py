@@ -1,6 +1,11 @@
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
+from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
+
+
+model = SentenceTransformer("all-MiniLM-L6-v2")  # Efficient embedding model
 
 def get_favicon(url):
     """Fetch the favicon URL from a website."""
@@ -22,6 +27,32 @@ def get_favicon(url):
             return None
     except Exception as e:
         return None
+
+def similarity_score(query, search):
+    """
+    Performs similarity search between a prompt and text partitions.
+
+    Args:
+        prompt (str): The search query.
+        partitions (list of str): List of partitioned text.
+        threshold (float): Minimum similarity score for filtering.
+
+    Returns:
+        list: Relevant partitions with similarity scores.
+    """
+    # Generate embeddings
+    prompt_embedding = [model.encode(query)]
+    partition_embeddings = [model.encode(search)]
+    # print(prompt_embedding.shape, partition_embeddings.shape)
+
+
+    # Compute cosine similarity
+    similarity = cosine_similarity(prompt_embedding, partition_embeddings)
+
+    # Sort by relevance (descending similarity)
+    # filtered_partitions.sort(key=lambda x: x["score"], reverse=True)
+
+    return similarity
 
 def call_google_search_api(query):
     """
@@ -53,6 +84,15 @@ def call_google_search_api(query):
         # Extract relevant information, including favicon
         if "items" in data:
             results = []
+            # Compute similarity scores
+            scores = [similarity_score(query, item.get("title")) for item in data["items"]]
+
+            # Sort data["items"] based on scores in descending order
+            sorted_items = [item for _, item in sorted(zip(scores, data["items"]), reverse=True)]
+
+            # Update data with sorted items
+            data["items"] = sorted_items
+
             for item in data["items"]:
                 title = item.get("title")
                 link = item.get("link")
