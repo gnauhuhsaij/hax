@@ -313,7 +313,7 @@ const ProjectPage = () => {
           </div>
         </div>
       ) : (
-        <div className="workflow-wrapper">
+        <div>
           <div className="workflow-name">{workflowName}</div>
           <Workflow workflow={workflow} workflowName={workflowName} />
         </div>

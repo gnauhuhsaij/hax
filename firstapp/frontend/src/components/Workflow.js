@@ -18,6 +18,8 @@ const Workflow = ({ workflow, workflowName }) => {
   const [loadingEvidence, setLoadingEvidence] = useState({});
   const [selectedStep, setSelectedStep] = useState(null); // Track selected step
   const [modalContent, setModalContent] = useState(null);
+  const [singleColumnMode, setSingleColumnMode] = useState(false);
+  const [isFading, setIsFading] = useState(false);
 
   // const toggleSubtask = (index) => {
   //   setExpandedSubtasks((prev) => ({
@@ -25,6 +27,12 @@ const Workflow = ({ workflow, workflowName }) => {
   //     [index]: !prev[index],
   //   }));
   // };
+
+  const allSubtasks = workflow.flatMap((subtask, index) => ({
+    ...subtask,
+    phaseIndex: workflow.findIndex((w) => w.phase === subtask.phase),
+    subtaskIndex: index,
+  }));
 
   const callApiForEvidence = async (name, execution) => {
     try {
@@ -42,6 +50,7 @@ const Workflow = ({ workflow, workflowName }) => {
         title: item.title,
         link: item.link,
         snippet: item.snippet,
+        score: item.score,
       }));
 
       return evidence.length > 0
@@ -101,80 +110,123 @@ const Workflow = ({ workflow, workflowName }) => {
   const resetSelection = () => {
     setSelectedStep(null);
     setModalContent(null);
+    setSingleColumnMode(false);
   };
 
   const handleStepClick = (phaseIndex, subtaskIndex) => {
+    setIsFading(true);
     setSelectedStep({ phaseIndex, subtaskIndex });
+
+    setTimeout(() => {
+      setSingleColumnMode(true);
+      setTimeout(() => {
+        setIsFading(false);
+      }, 1);
+
+      // Wait for DOM layout to update
+      setTimeout(() => {
+        const container = document.querySelector(".left-column"); // scrollable column
+        const el = document.getElementById(
+          `subtask-${phaseIndex}-${subtaskIndex}`
+        );
+
+        if (container && el) {
+          const containerTop = container.getBoundingClientRect().top;
+          const elTop = el.getBoundingClientRect().top;
+          const currentScroll = container.scrollTop;
+
+          const offsetFromContainer = elTop - containerTop;
+          const targetOffset = window.innerHeight * 0.1; // 20vh relative to screen
+
+          container.scrollTo({
+            top: currentScroll + offsetFromContainer - targetOffset,
+            behavior: "auto",
+          });
+        }
+      }, 1);
+    }, 400); // After fade-out completes
   };
 
   return (
     <>
       <div className="workflow-container" onClick={resetSelection}>
-        {Object.entries(groupedByPhase).map(([phase, subtasks], phaseIndex) => (
-          <div key={phase} className={`phase-row`}>
-            <div className={`subtasks-wrapper `}>
-              {subtasks.map((subtask, subtaskIndex) => {
-                const isSelected =
-                  selectedStep &&
-                  selectedStep.subtaskIndex === subtaskIndex &&
-                  selectedStep.phaseIndex === phaseIndex;
+        {!singleColumnMode ? (
+          Object.entries(groupedByPhase).map(
+            ([phase, subtasks], phaseIndex) => (
+              <div key={phase} className={`phase-row`}>
+                <div className={`subtasks-wrapper `}>
+                  {subtasks.map((subtask, subtaskIndex) => {
+                    return (
+                      <>
+                        <div
+                          key={subtaskIndex}
+                          className={`subtask ${
+                            selectedStep ? "faded-out" : ""
+                          }`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleStepClick(phaseIndex, subtaskIndex);
+                          }}
+                        >
+                          <h2 className="subtask-card">
+                            <h3>{subtask.description}</h3>
+                          </h2>
+                          {
+                            <div className="steps-wrapper">
+                              <div className="steps">
+                                {[
+                                  // { isPlaceholder: true },
+                                  ...subtask.steps, // Spread the original steps
+                                ].map((step, stepIndex) => {
+                                  const evidenceKey = `${phaseIndex}-${subtaskIndex}-${stepIndex}`;
+                                  return (
+                                    <Step
+                                      key={stepIndex}
+                                      step={{ ...step, index: stepIndex }} // Include step index
+                                      evidenceKey={evidenceKey}
+                                      onRoleCircleClick={() =>
+                                        handleRoleCircleClick(
+                                          step,
+                                          phaseIndex,
+                                          subtaskIndex,
+                                          stepIndex,
+                                          subtask
+                                        )
+                                      }
+                                      evidence={evidence[evidenceKey]}
+                                      loading={loadingEvidence[evidenceKey]}
+                                    />
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          }
+                        </div>
+                      </>
+                    );
+                  })}
+                </div>
+              </div>
+            )
+          )
+        ) : (
+          <div className={`left-column ${isFading ? "invisible" : ""}`}>
+            {Object.entries(groupedByPhase).flatMap(
+              ([phase, subtasks], phaseIndex) =>
+                subtasks.map((subtask, subtaskIndex) => {
+                  const isSelected =
+                    selectedStep?.phaseIndex === phaseIndex &&
+                    selectedStep?.subtaskIndex === subtaskIndex;
 
-                return (
-                  <>
-                    {isSelected && (
-                      <div
-                        key={`${subtaskIndex}-placeholder`}
-                        className="subtask-placeholder"
-                      >
-                        <h2 className="subtask-card">
-                          {subtask.description}
-                          <div className="subtask-preview">
-                            <img
-                              src="/icons/downarrow.png"
-                              alt="Send"
-                              className="preview-icon"
-                            />
-                          </div>
-                        </h2>
-                        {
-                          <div className="steps">
-                            {subtask.steps.map((step, stepIndex) => {
-                              const evidenceKey = `${phaseIndex}-${subtaskIndex}-${stepIndex}`;
-                              return (
-                                <Step
-                                  key={stepIndex}
-                                  step={{ ...step, index: stepIndex }} // Include step index
-                                  evidenceKey={evidenceKey}
-                                  onRoleCircleClick={() =>
-                                    handleRoleCircleClick(
-                                      step,
-                                      phaseIndex,
-                                      subtaskIndex,
-                                      stepIndex
-                                    )
-                                  }
-                                  evidence={evidence[evidenceKey]}
-                                  loading={loadingEvidence[evidenceKey]}
-                                />
-                              );
-                            })}
-                          </div>
-                        }
-                      </div>
-                    )}
+                  return (
                     <div
-                      key={subtaskIndex}
-                      className={`subtask ${
-                        !selectedStep
-                          ? ""
-                          : selectedStep.subtaskIndex !== subtaskIndex ||
-                            selectedStep.phaseIndex !== phaseIndex
-                          ? "faded-out"
-                          : "selected"
+                      key={`single-${phaseIndex}-${subtaskIndex}`}
+                      id={`subtask-${phaseIndex}-${subtaskIndex}`}
+                      className={`subtask single ${
+                        isSelected ? "highlighted" : ""
                       }`}
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleStepClick(phaseIndex, subtaskIndex);
                       }}
                     >
                       <h2 className="subtask-card">
@@ -211,16 +263,15 @@ const Workflow = ({ workflow, workflowName }) => {
                         </div>
                       }
                     </div>
-                  </>
-                );
-              })}
-            </div>
+                  );
+                })
+            )}
           </div>
-        ))}
-      </div>
-      <div className="parent-container">
-        {/* Modal Container */}
-        {modalContent && modalContent}
+        )}
+        <div className="parent-container">
+          {/* Modal Container */}
+          {modalContent && modalContent}
+        </div>
       </div>
     </>
   );

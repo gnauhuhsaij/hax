@@ -32,6 +32,7 @@ const ModalContainer = ({
     try {
       console.log(context);
       console.log(link);
+      console.log(evidence);
       const response = await axios.post(`${CONFIG.BACKEND_URL}/api/scrape`, {
         prompt: context, // Send context as prompt
         url: link, // Send URL for scraping
@@ -265,7 +266,7 @@ const ModalContainer = ({
                       </div>
                     </div>
                     <div className="evidence-title">{item.title}</div>
-                    <div className="evidence-snippet">{item.snippet}</div>
+                    <div className="evidence-snippet">{item.score}</div>
                     <div className="lastRow">
                       <button
                         className="preview-button"

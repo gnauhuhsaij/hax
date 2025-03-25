@@ -1,11 +1,48 @@
+import asyncio
+import aiohttp
 import requests
 from bs4 import BeautifulSoup
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 
 
 model = SentenceTransformer("all-MiniLM-L6-v2")  # Efficient embedding model
+
+def get_subpages_from_homepage(url, max_links=10):
+    """
+    Scrape subpage URLs from homepage by checking navbars and sitemap links.
+    """
+    try:
+        homepage = requests.get(url, timeout=5)
+        homepage.raise_for_status()
+        soup = BeautifulSoup(homepage.text, "html.parser")
+
+        links = set()
+
+        # 1. Try finding sitemap
+        sitemap_url = urljoin(url, "/sitemap.xml")
+        try:
+            sitemap = requests.get(sitemap_url, timeout=3)
+            if sitemap.status_code == 200:
+                sitemap_soup = BeautifulSoup(sitemap.text, "xml")
+                for loc in sitemap_soup.find_all("loc"):
+                    links.add(loc.text)
+        except:
+            pass  # Fall back to navbar scraping
+
+        # 2. If no sitemap or to enrich, parse <a> tags in nav/menu
+        for tag in soup.find_all("a", href=True):
+            href = tag["href"]
+            full_url = urljoin(url, href)
+            if urlparse(full_url).netloc == urlparse(url).netloc:
+                links.add(full_url)
+
+        return list(links)[:max_links]
+
+    except Exception as e:
+        print(f"Subpage scraping failed for {url}: {e}")
+        return []
 
 def get_favicon(url):
     """Fetch the favicon URL from a website."""
@@ -66,51 +103,49 @@ def call_google_search_api(query):
     search_engine_id = "c5297ee11db07449c"  # Replace with your custom search engine ID
     base_url = "https://www.googleapis.com/customsearch/v1"
 
-    # Construct the request parameters
-    params = {
-        "key": api_key,
-        "cx": search_engine_id,
-        "q": query
-    }
+    params = {"key": api_key, "cx": search_engine_id, "q": query}
 
     try:
-        # Make the API request
         response = requests.get(base_url, params=params)
-        response.raise_for_status()  # Raise HTTPError for bad responses
-
-        # Parse the JSON response
+        response.raise_for_status()
         data = response.json()
 
-        # Extract relevant information, including favicon
-        if "items" in data:
-            results = []
-            # Compute similarity scores
-            scores = [similarity_score(query, item.get("title")) for item in data["items"]]
+        if "items" not in data:
+            return {"success": False, "error": "No results found."}
 
-            # Sort data["items"] based on scores in descending order
-            sorted_items = [item for _, item in sorted(zip(scores, data["items"]), reverse=True)]
+        results = []
+        all_items = []
 
-            # Update data with sorted items
-            data["items"] = sorted_items
+        # Step 1: Process top search results
+        for item in data["items"]:
+            title = item.get("title")
+            link = item.get("link")
+            snippet = item.get("snippet")
+            favicon = get_favicon(link)
+            score = similarity_score(query, title)
+            all_items.append({
+                "title": title, "link": link, "snippet": snippet,
+                "favicon": favicon, "score": float(score[0][0])
+            })
 
-            for item in data["items"]:
-                title = item.get("title")
-                link = item.get("link")
-                snippet = item.get("snippet")
-
-                # Fetch the favicon using the helper function
-                favicon_url = get_favicon(link)
-                
-                results.append({
-                    "title": title,
-                    "link": link,
-                    "snippet": snippet,
-                    "favicon": favicon_url  # Store the actual favicon URL
+        # Step 2: Scrape subpages of top 3 items
+        for top_result in all_items[:3]:
+            subpages = get_subpages_from_homepage(top_result["link"], max_links=10)
+            print(subpages)
+            for subpage in subpages:
+                sub_favicon = get_favicon(subpage)
+                sub_score = similarity_score(query, subpage)
+                all_items.append({
+                    "title": subpage,  # No title, so using URL
+                    "link": subpage,
+                    "snippet": "Subpage of " + top_result["link"],
+                    "favicon": sub_favicon,
+                    "score": float(sub_score[0][0])
                 })
 
-            return {"success": True, "evidence": results}
-        else:
-            return {"success": False, "error": "No results found."}
+        # Step 3: Sort and return top 5
+        top_results = sorted(all_items, key=lambda x: x["score"], reverse=True)[:5]
+        return {"success": True, "evidence": top_results}
 
     except requests.exceptions.RequestException as e:
         return {"success": False, "error": str(e)}

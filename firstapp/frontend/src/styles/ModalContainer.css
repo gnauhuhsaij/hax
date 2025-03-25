@@ -10,7 +10,7 @@
 .modal-container {
   position: relative;
   display: flex;
-  width: 45vw;
+  width: 90%;
   height: calc(94vh - 100px);
   flex-direction: column; /* Fix typo from `justify-content: column` */
   justify-content: flex-start;
