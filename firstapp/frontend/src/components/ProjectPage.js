@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import axios from "axios";
 import Workflow from "./Workflow";
 import "../styles/ProjectPage.css"; // Adjust the path to the styles folder
@@ -32,6 +32,8 @@ const ProjectPage = () => {
   const [recommendations, setRecommendations] = useState([]);
   const [loadingRecommendations, setLoadingRecommendations] = useState(false);
   const [promptTags, setPromptTags] = useState([]);
+  const [summaryMode, setSummaryMode] = useState(false);
+  const [reviseMode, setReviseMode] = useState(false);
 
   //渐进渐出
   useEffect(() => {
@@ -39,6 +41,13 @@ const ProjectPage = () => {
       setIsVisible(true);
     }, 100); // Small delay before fade-in
   }, []);
+
+  // Summary Mode
+  useEffect(() => {
+    if (reviseMode) {
+      setInput(centerMessage);
+    }
+  }, [reviseMode]);
 
   // Recommendations
   useEffect(() => {
@@ -73,6 +82,25 @@ const ProjectPage = () => {
     if (currentWorkflowName) setWorkflowName(JSON.parse(currentWorkflowName));
   }, [currentWorkflow]);
 
+  useEffect(() => {
+    autoResizeTextarea();
+  }, [input]);
+
+  const textareaRef = useRef(null);
+
+  const handleChange = (e) => {
+    setInput(e.target.value);
+    autoResizeTextarea();
+  };
+
+  const autoResizeTextarea = () => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.style.height = "auto"; // reset height
+      textarea.style.height = `${textarea.scrollHeight}px`; // set to scroll height
+    }
+  };
+
   const uploadWorkflowToS3 = async (workflowData, workflowName) => {
     if (!user) return; // Ensure user is logged in
 
@@ -93,6 +121,12 @@ const ProjectPage = () => {
     setLoading(true); // Start loading
 
     try {
+      setPromptTags(
+        (prevTags) =>
+          prevTags.includes(input)
+            ? prevTags.filter((tag) => tag !== input) // Remove if already selected
+            : [...prevTags, input] // Add if not selected
+      );
       if (clickCount === 0) {
         const response = await axios.post(`${CONFIG.BACKEND_URL}/api/dig`, {
           prompt: input,
@@ -127,43 +161,8 @@ const ProjectPage = () => {
           "We are good to go! Wait a few more seconds for the workflow to generate."
         );
         setCenterMessage(responses);
-
-        // On the third click, make the original API call
-        const response2 = await axios.post(
-          `${CONFIG.BACKEND_URL}/api/process`,
-          { user_input: responses },
-          { headers: { "Content-Type": "application/json" } }
-        );
-
-        const response_workflowName = await axios.post(
-          `${CONFIG.BACKEND_URL}/api/get_name`,
-          { user_input: responses },
-          { headers: { "Content-Type": "application/json" } }
-        );
-
-        const { app_id, workflow_name } = response_workflowName.data;
-        const { wf, phase_names } = response2.data;
-
-        const parsedWorkflow = Object.entries(wf).map(
-          ([subtaskName, details]) => ({
-            name: subtaskName,
-            description: details.description,
-            steps: details.workflow.map((step) => ({
-              name: step.name,
-              classification: step.classification,
-              execution: step.execution,
-            })),
-            phase: details.phase,
-          })
-        );
-
-        setWorkflow(parsedWorkflow); // Set workflow
-        setWorkflowName(workflow_name);
-
-        uploadWorkflowToS3(JSON.stringify(parsedWorkflow), workflow_name);
-
-        // Save workflow and phase names to localStorage
-        setCurrentWorkflow(JSON.stringify(parsedWorkflow));
+        setSummaryMode(true);
+        // // On the third click, make the original API call
       }
     } catch (error) {
       console.error("Error during submission:", error);
@@ -173,13 +172,54 @@ const ProjectPage = () => {
     }
   };
 
+  const send2Process = async () => {
+    if (!input.trim()) return; // Prevent empty input submission
+    setLoading(true); // Start loading
+    try {
+      const response2 = await axios.post(
+        `${CONFIG.BACKEND_URL}/api/process`,
+        { user_input: centerMessage },
+        { headers: { "Content-Type": "application/json" } }
+      );
+
+      const response_workflowName = await axios.post(
+        `${CONFIG.BACKEND_URL}/api/get_name`,
+        { user_input: centerMessage },
+        { headers: { "Content-Type": "application/json" } }
+      );
+
+      const { app_id, workflow_name } = response_workflowName.data;
+      const { wf, phase_names } = response2.data;
+
+      const parsedWorkflow = Object.entries(wf).map(
+        ([subtaskName, details]) => ({
+          name: subtaskName,
+          description: details.description,
+          steps: details.workflow.map((step) => ({
+            name: step.name,
+            classification: step.classification,
+            execution: step.execution,
+          })),
+          phase: details.phase,
+        })
+      );
+
+      setWorkflow(parsedWorkflow); // Set workflow
+      setWorkflowName(workflow_name);
+
+      uploadWorkflowToS3(JSON.stringify(parsedWorkflow), workflow_name);
+
+      // Save workflow and phase names to localStorage
+      setCurrentWorkflow(JSON.stringify(parsedWorkflow));
+    } catch (error) {
+      console.error("Error during submission:", error);
+    } finally {
+      setLoading(false); // Stop loading
+    }
+  };
+
   const handleTagToggle = (rec) => {
-    setPromptTags(
-      (prevTags) =>
-        prevTags.includes(rec)
-          ? prevTags.filter((tag) => tag !== rec) // Remove if already selected
-          : [...prevTags, rec] // Add if not selected
-    );
+    setInput(rec);
   };
 
   useEffect(() => {
@@ -202,17 +242,73 @@ const ProjectPage = () => {
     <div className={`null-wrapper ${isVisible ? "visible" : ""}`}>
       {!workflow ? (
         <div className="content-wrapper">
-          <motion.div
-            key={centerMessage} // Triggers animation on change
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.5, ease: "easeInOut" }}
-            className="center-message"
-          >
-            <h2>{formattedMessage}</h2>
-          </motion.div>
-          <div className="promptTags">
+          {summaryMode ? (
+            <motion.div
+              key={centerMessage} // Triggers animation on change
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.5, ease: "easeInOut" }}
+              className={`center-message summary`}
+            >
+              {reviseMode ? (
+                <>
+                  <p>Revise Your Prompt:</p>
+                  <div className="reviseContainer">
+                    <textarea
+                      ref={textareaRef}
+                      value={input}
+                      onChange={handleChange}
+                      placeholder={textPlaceHolder}
+                      className="reviseInput"
+                    />
+                  </div>
+                  <button
+                    className="generate"
+                    style={{
+                      marginTop: "30px",
+                    }}
+                    onClick={() => {
+                      setCenterMessage(input);
+                      setReviseMode(false);
+                    }}
+                  >
+                    <p>Finish Revising</p>
+                  </button>
+                </>
+              ) : (
+                <>
+                  <p>To Recap, You Want To</p>
+                  <h2>{centerMessage}</h2>
+                  <button
+                    className="backAndRevise"
+                    onClick={() => setReviseMode(true)}
+                  >
+                    back and revise
+                  </button>
+                  <button className="generate" onClick={() => send2Process()}>
+                    {loading ? (
+                      <span className="spinner"></span>
+                    ) : (
+                      <p>Generate a Workflow</p>
+                    )}
+                  </button>
+                </>
+              )}
+            </motion.div>
+          ) : (
+            <motion.div
+              key={centerMessage} // Triggers animation on change
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.5, ease: "easeInOut" }}
+              className={`center-message`}
+            >
+              <h2>{formattedMessage}</h2>
+            </motion.div>
+          )}
+          <div className={`promptTags ${summaryMode ? "hidden" : ""}`}>
             {[0, 1].map((rowIndex) => (
               <div
                 key={rowIndex}
@@ -246,7 +342,11 @@ const ProjectPage = () => {
           </div>
 
           {loadingRecommendations ? (
-            <div className="recommendations-container">
+            <div
+              className={`recommendations-container ${
+                summaryMode ? "hidden" : ""
+              }`}
+            >
               {[0, 1].map((rowIndex) => (
                 <div key={rowIndex} className="recommendation-row">
                   {[
@@ -272,7 +372,11 @@ const ProjectPage = () => {
               ))}
             </div>
           ) : (
-            <div className="recommendations-container">
+            <div
+              className={`recommendations-container ${
+                summaryMode ? "hidden" : ""
+              }`}
+            >
               {[0, 1].map((rowIndex) => (
                 <div key={rowIndex} className="recommendation-row">
                   {recommendations
@@ -296,7 +400,7 @@ const ProjectPage = () => {
             </div>
           )}
 
-          <div className="input-container">
+          <div className={`input-container ${summaryMode ? "hidden" : ""}`}>
             <input
               type="text"
               placeholder={textPlaceHolder}

@@ -133,7 +133,12 @@ const ModalContainer = ({
 
   if (classification === "Gather information from user") {
     return (
-      <div className="modal-container user">
+      <div
+        className="modal-container user"
+        onClick={(e) => {
+          e.stopPropagation();
+        }}
+      >
         <div className="chat-container">
           <div className="chat-history">
             {chatHistory.map((message, index) => (
@@ -183,7 +188,12 @@ const ModalContainer = ({
 
   if (classification !== "Gather information from external sources") {
     return (
-      <div className="modal-container">
+      <div
+        className="modal-container"
+        onClick={(e) => {
+          e.stopPropagation();
+        }}
+      >
         <div className="placeholder-content">
           <h2>Coming Soon</h2>
           <p>Details for classification: {classification}</p>
@@ -206,7 +216,12 @@ const ModalContainer = ({
 
   // Content for "Gather information from external sources"
   return (
-    <div className="modal-container">
+    <div
+      className="modal-container"
+      onClick={(e) => {
+        e.stopPropagation();
+      }}
+    >
       {isLoading ? (
         <div className="search-header">
           <h2>Loading...</h2>

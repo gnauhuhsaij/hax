@@ -20,6 +20,11 @@ body {
   color: #000000;
 }
 
+.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
 /* Main container with glass effect */
 .null-wrapper {
   background: inherit;
@@ -64,11 +69,107 @@ body {
 /* Center message container */
 .center-message {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   width: 80vw;
   text-align: center;
-  margin-bottom: 132px;
+  margin-bottom: 20px;
+  gap: 40px;
+}
+
+.center-message.summary {
+  width: 50%;
+  margin-top: 100px;
+}
+
+.center-message p {
+  color: #000;
+  text-align: center;
+  font-family: "Noto Sans";
+  font-size: 40px;
+  font-style: normal;
+  font-weight: 200;
+  line-height: 150%; /* 54px */
+  letter-spacing: -0.684px;
+}
+
+.center-message.summary h2 {
+  font-size: 32px;
+  font-weight: 500;
+  letter-spacing: -0.608px;
+}
+
+.reviseContainer {
+  display: flex;
+  /* height: 300px; */
+  padding: 5% 10%;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  align-self: stretch;
+  border-radius: 15px;
+  border: 1px solid #000;
+  background: var(--trans_low, rgba(173, 173, 173, 0.1));
+}
+
+.reviseContainer textarea {
+  width: 100%;
+  height: 100%;
+  resize: none; /* prevent manual resizing if you want */
+  border: none;
+  background: transparent;
+  color: #000;
+  text-align: center;
+  font-family: "Noto Sans";
+  font-size: 32px;
+  font-style: normal;
+  font-weight: 300;
+  line-height: 150%; /* 48px */
+  letter-spacing: -0.608px;
+  outline: none;
+}
+
+.backAndRevise {
+  width: 30%;
+  color: #000;
+  text-align: center;
+  font-family: "Noto Sans";
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 150%; /* 30px */
+  letter-spacing: -0.38px;
+  text-decoration-line: underline;
+  text-decoration-style: solid;
+  text-decoration-skip-ink: none;
+  text-decoration-thickness: auto;
+  text-underline-offset: auto;
+  text-underline-position: from-font;
+}
+
+.generate {
+  display: flex;
+  width: 258px;
+  height: 56px;
+  padding: 10px;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  border-radius: 10px;
+  background: #000;
+  box-shadow: 2px 2px 15px 0px rgba(0, 0, 0, 0.15);
+}
+
+.generate p {
+  color: #fff;
+  text-align: center;
+  font-family: "Noto Sans";
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 150%; /* 30px */
+  letter-spacing: -0.38px;
 }
 
 .center-message h2 {
@@ -120,8 +221,7 @@ body {
   border-bottom: 2px solid white;
 }
 
-.recommendations-container,
-.promptTags {
+.recommendations-container {
   display: flex;
   flex-direction: column;
   gap: 15px; /* Space between rows */
@@ -136,7 +236,16 @@ body {
 }
 
 .promptTags {
-  top: calc(-56px + 36px + 50vh); /* Adjust the distance from the bottom */
+  display: flex;
+  flex-direction: column;
+  gap: 15px; /* Space between rows */
+  align-items: center;
+  justify-content: center;
+  width: 80vw;
+  height: 10vh;
+  border-radius: 10px;
+  background: transparent;
+  /* top: calc(-56px + 36px + 50vh);  */
 }
 
 .recommendation-row,
