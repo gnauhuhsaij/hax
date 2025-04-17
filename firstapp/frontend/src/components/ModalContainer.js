@@ -60,6 +60,15 @@ const ModalContainer = ({
     }
   };
 
+  const autoFetchEvidenceSequentially = async () => {
+    if (!evidence || !evidence.length) return;
+
+    for (let i = 0; i < evidence.length; i++) {
+      const item = evidence[i];
+      await fetchEvidence(item.link, i);
+    }
+  };
+
   const sendMessage = async () => {
     try {
       let response;
@@ -95,6 +104,16 @@ const ModalContainer = ({
       ]);
     }
   };
+
+  // useEffect(() => {
+  //   if (
+  //     classification === "Gather information from external sources" &&
+  //     !isLoading &&
+  //     evidence?.length
+  //   ) {
+  //     autoFetchEvidenceSequentially();
+  //   }
+  // }, [classification, isLoading, evidence]);
 
   useEffect(() => {
     sendMessage(); // Call sendMessage immediately after component mounts

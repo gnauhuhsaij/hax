@@ -2,7 +2,7 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: "Noto Sans", sans-serif; /* Set Noto Sans as the default font */
+  font-family: "Inter", sans-serif; /* Set Noto Sans as the default font */
 }
 
 a {
@@ -11,14 +11,16 @@ a {
 
 /* Dashboard layout */
 .dashboard {
-  width: 100%;
+  /* width: calc(100% - 14vh); */
+  width: 100vh;
+  height: 100%;
   display: flex;
   flex-direction: column;
   align-items: flex-start; /* Align content to the left */
   justify-content: flex-start;
-  padding: 40px;
-  margin-left: 100px;
-  gap: 20px; /* Add spacing between elements */
+  margin-top: 5vh;
+  margin-left: calc(50% - 50vh);
+  gap: 4%; /* Add spacing between elements */
   opacity: 0;
   transition: opacity 0.5s ease-in-out;
 }
@@ -31,6 +33,154 @@ a {
   opacity: 0; /* Fade out effect */
 }
 
+.announcements {
+  height: 12%;
+  background: transparent;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20%;
+}
+
+.ADescription {
+  height: 20%;
+  background: transparent;
+  font-family: "Inter", sans-serif;
+  color: #000;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 150%; /* 30px */
+  letter-spacing: -0.38px;
+}
+
+.ASection {
+  display: flex;
+  height: 70%;
+  width: 100%;
+  padding: 24px 20px;
+  align-items: center;
+  gap: 10px;
+  border-radius: 10px;
+  border: 1px solid #4c4c4c;
+
+  color: #000;
+  font-family: "Inter", sans-serif;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 300;
+  line-height: 150%; /* 24px */
+  letter-spacing: -0.304px;
+}
+
+.quickStart {
+  height: 20%;
+  background: transparent;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8%;
+}
+
+.QSDescription {
+  height: 20%;
+  background: transparent;
+  font-family: "Inter", sans-serif;
+  color: #000;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 150%; /* 30px */
+  letter-spacing: -0.38px;
+}
+
+.QSSection {
+  height: 72%;
+  display: inline-flex;
+  padding: 16px 0px 16px 12px;
+  justify-content: flex-end;
+  align-items: center;
+  border-radius: 10px;
+  background: #efefef;
+}
+
+/* Project sections */
+.project-section {
+  display: flex;
+  flex-direction: column;
+  gap: 2vh;
+  width: 100%; /* Take full width */
+  background: transparent;
+  height: 60%;
+}
+
+.project-headings {
+  display: flex;
+  flex-direction: row;
+  height: 12.5%;
+  width: 100%;
+}
+
+.headings-left {
+  width: 85%;
+  display: flex;
+  flex-direction: column;
+  gap: 25%;
+}
+
+.myProject {
+  height: 40%;
+  color: #000;
+  font-family: Inter;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 150%; /* 30px */
+  letter-spacing: -0.38px;
+}
+
+.statusRow {
+  height: 30%;
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+}
+
+/* Start project button */
+.status-btn {
+  all: unset;
+  display: inline-flex;
+  padding: 4px 16px;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  /* min-width: 8%; */
+  border-radius: 5px;
+  background: #484848;
+  flex-wrap: wrap;
+  white-space: normal;
+  word-break: break-word;
+  flex-shrink: 0;
+}
+
+.status-btn p {
+  color: #fff;
+  text-align: center;
+
+  /* Medium-12 */
+  font-family: var(--font-family-Font-1, Inter);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: var(--font-weight-500, 500);
+  line-height: var(--line-height-20, 20px); /* 166.667% */
+}
+
+.headings-right {
+  width: 15%;
+  display: flex;
+  flex-direction: column;
+}
+
 /* Start project button */
 .start-project-btn {
   display: flex;
@@ -39,7 +189,6 @@ a {
   width: 163px;
   height: 45px;
   padding: 10px 15px;
-  margin-top: 50px;
   border-radius: 10px;
   background: #000;
   flex-shrink: 0;
@@ -50,15 +199,9 @@ a {
   text-decoration: none;
   color: white;
   font-size: 16px; /* Set font size to 19px */
-  font-family: "Noto Sans", sans-serif;
+  font-family: "Inter", sans-serif;
   text-align: center;
   width: 100%; /* Ensure the link takes full button width */
-}
-
-/* Project sections */
-.project-section {
-  margin-top: 20px;
-  width: 100%; /* Take full width */
 }
 
 .project-section h3 {
@@ -67,37 +210,102 @@ a {
 
 .projects {
   display: flex;
-  gap: 40px;
-  margin-bottom: 40px;
+  flex-direction: row;
+  height: 100%;
+  gap: 2%;
 }
 
 /* Individual project card */
 .project-card {
-  border-radius: 5px;
-  background: var(--trans_low, rgba(173, 173, 173, 0.1));
+  border-radius: var(--Card, 10px);
+  border: 0.3px solid #b1b1b1;
+  background: white;
   box-shadow: 2px 2px 10px 0px rgba(0, 0, 0, 0.1);
-  padding: 20px;
   border-radius: 15px;
-  width: 308px;
-  height: 208px;
+  width: 32%;
+  height: 48%;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
+}
+
+.project-description {
+  height: 52%;
+  display: flex;
+  padding: 11px 12px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 15%;
+  align-self: stretch;
+  border-radius: 0px 0px var(--Card, 10px) var(--Card, 10px);
+  background: #fff;
 }
 
 .project-header {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap; /* Prevents text from wrapping */
-  font-size: 13px;
-  font-weight: 400;
+  max-width: 90%;
+  height: 20%;
   color: #000;
-  font-family: "Noto Sans";
+
+  /* www.notion.so/Inter/Medium */
+  font-family: var(--font-family-Font-1, Inter);
+  font-size: var(--font-size-14, 14px);
   font-style: normal;
-  line-height: 1.4;
-  max-width: 80%; /* Ensures it stays within the container */
-  height: 30px;
-  padding-left: 5px;
+  font-weight: var(--font-weight-500, 500);
+  line-height: var(--font-size-14, 14px); /* 100% */
+}
+
+.project-management {
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  align-self: stretch;
+  height: 65%;
+}
+
+.project-member {
+  height: 35%;
+  width: 100%;
+  background: blue;
+  display: flex;
+  flex-direction: row;
+}
+
+.project-progress {
+  height: 65%;
+  width: 100%;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+}
+
+.progress-text {
+  display: flex;
+  height: 70%;
+  flex-direction: column;
+  justify-content: center;
+  align-self: stretch;
+  color: #000;
+
+  /* Page Note */
+  font-family: Inter;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 150%; /* 15px */
+  letter-spacing: -0.19px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 30%;
+  flex-shrink: 0;
+  border-radius: 10px;
+  background: var(--trans, rgba(173, 173, 173, 0.2));
 }
 
 .project-header.placeholder {
@@ -107,9 +315,10 @@ a {
 
 .project-image {
   width: 100%;
-  height: 131px;
+  height: 55%;
+  border-radius: 10px 10px 0px 0px;
+  background: #f0f0f0;
   flex-shrink: 0;
-  border-radius: 15px;
-  margin-top: 20px;
+  margin-top: 0px;
   background: var(--trans, rgba(173, 173, 173, 0.2));
 }

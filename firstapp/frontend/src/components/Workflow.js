@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect, useRef } from "react";
 import axios from "axios";
 import Step from "./Step";
 import ModalContainer from "./ModalContainer";
@@ -21,12 +21,38 @@ const Workflow = ({ workflow, workflowName }) => {
   const [singleColumnMode, setSingleColumnMode] = useState(false);
   const [isFading, setIsFading] = useState(false);
 
+  const skipHandleRoleClickRef = useRef(false);
+
   // const toggleSubtask = (index) => {
   //   setExpandedSubtasks((prev) => ({
   //     ...prev,
   //     [index]: !prev[index],
   //   }));
   // };
+  useEffect(() => {
+    if (skipHandleRoleClickRef.current) {
+      skipHandleRoleClickRef.current = false; // reset after skipping
+      return;
+    }
+    if (selectedStep) {
+      const phaseNames = Object.keys(groupedByPhase);
+      const phaseName = phaseNames[selectedStep.phaseIndex];
+      const subtask = groupedByPhase[phaseName]?.[selectedStep.subtaskIndex];
+
+      const firstStep = subtask?.steps?.[0];
+
+      if (firstStep) {
+        const stepIndex = 0;
+        handleRoleCircleClick(
+          firstStep,
+          selectedStep.phaseIndex,
+          selectedStep.subtaskIndex,
+          stepIndex,
+          subtask
+        );
+      }
+    }
+  }, [selectedStep]);
 
   const allSubtasks = workflow.flatMap((subtask, index) => ({
     ...subtask,
@@ -184,15 +210,20 @@ const Workflow = ({ workflow, workflowName }) => {
                                       key={stepIndex}
                                       step={{ ...step, index: stepIndex }} // Include step index
                                       evidenceKey={evidenceKey}
-                                      onRoleCircleClick={() =>
+                                      onRoleCircleClick={() => {
+                                        handleStepClick(
+                                          phaseIndex,
+                                          subtaskIndex
+                                        );
                                         handleRoleCircleClick(
                                           step,
                                           phaseIndex,
                                           subtaskIndex,
                                           stepIndex,
                                           subtask
-                                        )
-                                      }
+                                        );
+                                        skipHandleRoleClickRef.current = true; // skip the next effect
+                                      }}
                                       evidence={evidence[evidenceKey]}
                                       loading={loadingEvidence[evidenceKey]}
                                     />
@@ -227,6 +258,7 @@ const Workflow = ({ workflow, workflowName }) => {
                       }`}
                       onClick={(e) => {
                         e.stopPropagation();
+                        handleStepClick(phaseIndex, subtaskIndex);
                       }}
                     >
                       <h2 className="subtask-card">
@@ -245,15 +277,17 @@ const Workflow = ({ workflow, workflowName }) => {
                                   key={stepIndex}
                                   step={{ ...step, index: stepIndex }} // Include step index
                                   evidenceKey={evidenceKey}
-                                  onRoleCircleClick={() =>
+                                  onRoleCircleClick={() => {
+                                    handleStepClick(phaseIndex, subtaskIndex);
                                     handleRoleCircleClick(
                                       step,
                                       phaseIndex,
                                       subtaskIndex,
                                       stepIndex,
                                       subtask
-                                    )
-                                  }
+                                    );
+                                    skipHandleRoleClickRef.current = true; // skip the next effect
+                                  }}
                                   evidence={evidence[evidenceKey]}
                                   loading={loadingEvidence[evidenceKey]}
                                 />

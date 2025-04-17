@@ -27,7 +27,7 @@ const Step = ({ step, evidenceKey, onRoleCircleClick, evidence, loading }) => {
         <div
           className={`step-roleCircle`}
           onClick={(e) => {
-            // e.stopPropagation();
+            e.stopPropagation();
             onRoleCircleClick();
           }}
         ></div>

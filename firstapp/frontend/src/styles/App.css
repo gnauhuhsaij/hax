@@ -25,9 +25,9 @@
 }
 
 .sidebar.collapsed + .content-area {
-  margin-left: 60px; /* Adjust margin when sidebar is collapsed */
+  margin-left: calc(32px + 4vh); /* Adjust margin when sidebar is collapsed */
 }
 
 .sidebar.open + .content-area {
-  margin-left: 12vw; /* Adjust margin when sidebar is open */
+  margin-left: 23vh; /* Adjust margin when sidebar is open */
 }

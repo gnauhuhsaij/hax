@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { AuthContext } from "../contexts/AuthContext"; // Import AuthContext
 import "../styles/Dashboard.css";
-import CONFIG from '../config';
+import CONFIG from "../config";
 
 const Dashboard = () => {
   const { user, setCurrentWorkflow, setCurrentWorkflowName } =
@@ -13,6 +13,15 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true); // Track loading state
   const [isExiting, setIsExiting] = useState(false); // Track exit animation
   const [isVisible, setIsVisible] = useState(false);
+
+  const date = new Date();
+  const options = {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  };
+  const formattedDate = date.toLocaleDateString(undefined, options);
 
   useEffect(() => {
     setTimeout(() => {
@@ -42,7 +51,7 @@ const Dashboard = () => {
           response.data.workflowsNames.length > 0
         ) {
           // Get the most recent 3 workflows
-          setRecentProjects(response.data.workflowsNames.slice(0, 4));
+          setRecentProjects(response.data.workflowsNames.slice(0, 3));
         }
       } catch (error) {
         console.error("Error fetching workflows:", error);
@@ -142,12 +151,40 @@ const Dashboard = () => {
         isExiting ? "exiting" : isVisible ? "visible" : ""
       }`}
     >
-      <button className="start-project-btn" onClick={() => handleNewProject()}>
-        <p>+ Start a project</p>
-      </button>
+      <div className="announcements">
+        <div className="ADescription">{formattedDate}</div>
+        <div className="ASection">
+          💪 A productive morning leads to a confident evening. Pick a task and
+          dive in! ☀️ 💼
+        </div>
+      </div>
+      <div className="quickStart">
+        <div className="QSDescription">Quick Tasks to Start...</div>
+        <div className="QSSection"></div>
+      </div>
 
       <div className="project-section">
-        <h3>Recent</h3>
+        <div className="project-headings">
+          <div className="headings-left">
+            <div className="myProject">My Projects</div>
+            <div className="statusRow">
+              <button className="status-btn">
+                <p>In Progress</p>
+              </button>
+              <button className="status-btn">
+                <p>Recent</p>
+              </button>
+            </div>
+          </div>
+          <div className="headings-right">
+            <button
+              className="start-project-btn"
+              onClick={() => handleNewProject()}
+            >
+              <p>+ Start a project</p>
+            </button>
+          </div>
+        </div>
         <div className="projects">
           {recentProjects.length > 0 ? (
             recentProjects.map((project, index) => (
@@ -162,10 +199,19 @@ const Dashboard = () => {
                   whiteSpace: "nowrap",
                 }}
               >
-                <div className="project-header">
-                  {project.replace(".json", "")}
-                </div>
                 <div className="project-image"></div>
+                <div className="project-description">
+                  <div className="project-header">
+                    {project.replace(".json", "")}
+                  </div>
+                  <div className="project-management">
+                    <div className="project-member"></div>
+                    <div className="project-progress">
+                      <div className="progress-text">In Progress</div>
+                      <div className="progress-bar"></div>
+                    </div>
+                  </div>
+                </div>
               </div>
             ))
           ) : (

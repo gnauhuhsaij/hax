@@ -6,7 +6,7 @@ import "../styles/Sidebar.css";
 const Sidebar = () => {
   const { user, login, logout } = useContext(AuthContext); // Use AuthContext for global user state
   const [isOpen, setIsOpen] = useState(true);
-
+  const [currentSection, setCurrentSection] = useState("Home");
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
   };
@@ -73,48 +73,67 @@ const Sidebar = () => {
       <button className="toggle-button" onClick={toggleSidebar}>
         <img src="/icons/collapse.svg" alt="Collapse Icon" className="icon" />
       </button>
+      <img src="/icons/haxLogo.svg" alt="Logo Icon" className="logo" />
 
-      {isOpen && (
-        <>
-          <h1 className="website-title">haX</h1>
-          <ul>
-            <li>
-              <Link to="/">
-                <img src="/icons/home.svg" alt="Home Icon" className="icon" />{" "}
-                Home
-              </Link>
-            </li>
-            <li>
-              <Link to="/community">
-                <img
-                  src="/icons/global.svg"
-                  alt="Community Icon"
-                  className="icon"
-                />{" "}
-                Community
-              </Link>
-            </li>
-            <li>
-              <Link to="/saved">
-                <img src="/icons/save.svg" alt="Saved Icon" className="icon" />{" "}
-                Saved
-              </Link>
-            </li>
-            <li>
-              <Link to="/reward">
-                <img src="/icons/coin.svg" alt="Reward Icon" className="icon" />{" "}
-                Reward
-              </Link>
-            </li>
-          </ul>
+      {/* <h1 className="website-title">haX</h1> */}
+      <div className="navSection">
+        <ul>
+          <li>
+            <Link
+              to="/"
+              onClick={() => setCurrentSection("Home")}
+              className={currentSection === "Home" ? "active" : ""}
+            >
+              <img src="/icons/home.svg" alt="Home Icon" className="icon" />{" "}
+              {isOpen && <>Home</>}
+            </Link>
+          </li>
+          <li>
+            <Link
+              to="/community"
+              onClick={() => setCurrentSection("Community")}
+              className={currentSection === "Community" ? "active" : ""}
+            >
+              <img
+                src="/icons/global.svg"
+                alt="Community Icon"
+                className="icon"
+              />{" "}
+              {isOpen && <>Community</>}
+            </Link>
+          </li>
+          <li>
+            <Link
+              to="/saved"
+              onClick={() => setCurrentSection("Saved")}
+              className={currentSection === "Saved" ? "active" : ""}
+            >
+              <img src="/icons/save.svg" alt="Saved Icon" className="icon" />{" "}
+              {isOpen && <>Saved</>}
+            </Link>
+          </li>
+          <li>
+            <Link
+              to="/reward"
+              onClick={() => setCurrentSection("Reward")}
+              className={currentSection === "Reward" ? "active" : ""}
+            >
+              <img src="/icons/coin.svg" alt="Reward Icon" className="icon" />{" "}
+              {isOpen && <>Reward</>}
+            </Link>
+          </li>
+        </ul>
+      </div>
 
-          {/* Profile Section */}
-          <div className="profile-section">
-            <img
-              src={user ? user.picture : "/icons/ellipse.svg"}
-              alt="Profile"
-              className="account-icon"
-            />
+      {/* Profile Section */}
+      <div className="profile-section">
+        <img
+          src={user ? user.picture : "/icons/ellipse.svg"}
+          alt="Profile"
+          className="account-icon"
+        />
+        {isOpen && (
+          <>
             {!user ? (
               <div className="profile-container">
                 <button onClick={handleSignInClick} className="login-button">
@@ -124,7 +143,7 @@ const Sidebar = () => {
             ) : (
               <div className="profile-container">
                 <div className="descriptions">
-                  <h3 className="username">{user.name}</h3>
+                  <p className="username">{user.name}</p>
                   <p className="days">20 days on haX</p>
                 </div>
                 <button onClick={logout} className="logout-button">
@@ -132,9 +151,9 @@ const Sidebar = () => {
                 </button>
               </div>
             )}
-          </div>
-        </>
-      )}
+          </>
+        )}
+      </div>
     </div>
   );
 };

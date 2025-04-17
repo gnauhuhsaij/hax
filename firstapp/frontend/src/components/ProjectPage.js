@@ -320,11 +320,13 @@ const ProjectPage = () => {
                   .fill(null)
                   .map((_, index) => {
                     const tagIndex = rowIndex * 4 + index;
-                    return tagIndex < promptTags.length ? (
+                    const isSelected = promptTags.includes(
+                      promptTags[tagIndex]
+                    );
+                    return tagIndex < promptTags.length && isSelected ? (
                       <button
                         key={tagIndex}
-                        className="promptTag selected"
-                        onClick={() => handleTagToggle(promptTags[tagIndex])}
+                        className={`promptTag ${loading ? "hidden" : ""} `}
                       >
                         {promptTags[tagIndex].length > 50
                           ? promptTags[tagIndex].slice(0, 50) + "..."
@@ -382,13 +384,10 @@ const ProjectPage = () => {
                   {recommendations
                     .slice(rowIndex * 4, rowIndex * 4 + 4)
                     .map((rec, index) => {
-                      const isSelected = promptTags.includes(rec);
                       return (
                         <button
                           key={index}
-                          className={`recommendation-button ${
-                            isSelected ? "selected" : ""
-                          }`}
+                          className={`recommendation-button`}
                           onClick={() => handleTagToggle(rec)}
                         >
                           {rec.length > 50 ? rec.slice(0, 50) + "..." : rec}

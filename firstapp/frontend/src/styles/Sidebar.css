@@ -1,11 +1,12 @@
 /* Reset padding and margins for the entire page */
 .sidebar {
-  width: 12vw;
+  width: 23vh;
   background-color: var(--trans_low, rgba(173, 173, 173, 0.1));
   height: 100vh;
   padding: 0px;
   display: flex;
   flex-direction: column;
+  flex-shrink: 0;
   /* justify-content: space-between; */
   justify-content: flex-start;
   align-items: flex-start;
@@ -17,27 +18,19 @@
 }
 
 .sidebar.collapsed {
-  width: 60px; /* Adjust the collapsed width as needed */
+  width: calc(32px + 4vh); /* Adjust the collapsed width as needed */
 }
 
 .toggle-button {
   background-color: transparent;
   border: none;
   cursor: pointer;
-  width: 6px; /* Fixed width for the button */
-  height: 6px; /* Fixed height for the button */
+  width: 16px; /* Fixed width for the button */
+  height: 16px; /* Fixed height for the button */
   position: absolute; /* Make the button absolute */
-  top: 44px; /* Distance from the top */
-  right: -20px; /* Position to the right of the sidebar */
+  top: calc(2vh + 8px); /* Distance from the top */
+  right: calc(1vh); /* Position to the right of the sidebar */
   transition: right 0.3s ease; /* Smooth transition for the button movement */
-}
-
-.sidebar.collapsed .toggle-button {
-  right: 20px; /* Position when collapsed */
-}
-
-.sidebar.open .toggle-button {
-  right: 20px; /* Position when open */
 }
 
 /* Title */
@@ -49,37 +42,52 @@
   text-align: flex-start;
 }
 
+.navSection {
+  width: 100%;
+  position: absolute;
+  top: 15vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 /* Navigation links */
-.sidebar ul {
-  list-style-type: none;
+.navSection ul {
+  display: flex;
+  flex-direction: column;
+  /* align-items: center; */
+  width: calc(100% - 0.04 * 23vh);
   padding: 0;
-  margin-top: 20px;
   color: #000;
-  font-family: "Noto Sans";
+  gap: 2.25vh;
+}
+
+.navSection ul li a {
+  height: 4.5vh;
+  width: 99%;
+
+  font-family: "Inter", sans-serif;
   font-size: 16px;
   font-style: normal;
   font-weight: 500;
   line-height: 100%; /* 24px */
   letter-spacing: -0.304px;
   text-align: center;
-  gap: 0px;
-}
 
-.sidebar ul li a {
-  height: 80px;
-  width: 100%;
-  margin: 0;
+  margin-right: 0.5vw;
   display: inline-flex;
-  padding: 11px 111px 11px 26px;
+  padding-left: 1.8vh;
+  justify-content: flex-start;
   align-items: center;
   border-radius: 5px;
   background: transparent;
   text-decoration: none;
-  font-size: 15px;
   color: #333;
+  gap: 7px;
 }
 
-.sidebar ul li a:hover {
+.navSection ul li a:hover,
+.navSection ul li a.active {
   background: var(--trans, rgba(173, 173, 173, 0.2)); /* Grayish background */
   color: #333; /* Text turns black on hover */
 }
@@ -87,7 +95,6 @@
 /* Sidebar Profile Section */
 .profile-section {
   margin-top: auto; /* Push it to the bottom naturally */
-  padding: 0px;
   background-color: rgba(173, 173, 173, 0.2); /* Optional: Visual separation */
   border-radius: 8px;
   display: flex;
@@ -96,7 +103,7 @@
   justify-content: flex-start;
   gap: 20px; /* Adds space between elements inside */
   width: 100%; /* Ensure it doesn’t overflow */
-  height: 10%;
+  height: 6%;
   box-sizing: border-box; /* Avoid overflow caused by padding */
 }
 
@@ -125,19 +132,24 @@
 .profile-section .descriptions {
   flex-direction: row;
   align-items: flex-start;
+  color: #000;
+  /* www.notion.so/Inter/Regular */
+  font-family: "Inter", sans-serif;
+  font-style: normal;
+  line-height: var(--line-height-20, 20px); /* 142.857% */
 }
 
 .profile-section .descriptions .username {
   margin: 0;
-  font-size: 15px;
-  color: #555;
+  font-size: var(--font-size-14, 14px);
+  font-weight: 400;
   text-align: left;
 }
 
 .profile-section .descriptions .days {
   margin: 0;
-  font-size: 12px;
-  color: #555;
+  font-size: 10px;
+  font-weight: 400;
   text-align: left;
 }
 
@@ -148,7 +160,7 @@
 }
 
 .login-button p {
-  font-family: "Noto Sans";
+  font-family: "Inter", sans-serif;
   font-size: 14px;
   font-style: normal;
 }
@@ -161,8 +173,16 @@
 }
 
 .icon {
-  width: 18px;
-  height: 18px;
+  width: 24px;
+  height: 24px;
   margin-right: 8px;
   vertical-align: middle;
+}
+
+.logo {
+  width: 32px;
+  height: 32px;
+  position: absolute;
+  top: 2vh;
+  left: 2vh;
 }

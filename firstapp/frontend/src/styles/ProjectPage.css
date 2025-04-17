@@ -9,10 +9,7 @@
 
 /* Full-page gradient background */
 body {
-  background: var(
-    --gradient_back,
-    linear-gradient(154deg, #fcf3ff 11.78%, #eef7ff 57.83%, #fcf2ff 98.35%)
-  );
+  background: white;
   display: flex;
   justify-content: center;
   align-items: stretch;
@@ -274,6 +271,7 @@ body {
   min-width: fit-content; /* Ensures button is as wide as necessary */
   height: 100%;
   overflow: hidden; /* Prevents text from overflowing */
+  transition: all 0s ease-in-out;
 }
 
 .recommendation-button.loading {
@@ -340,8 +338,8 @@ button:disabled {
 .spinner {
   width: 15px;
   height: 15px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: white;
+  border: 2px solid rgba(110, 110, 110, 0.513);
+  border-top-color: rgb(111, 111, 111);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
