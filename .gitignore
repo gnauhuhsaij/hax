@@ -3,4 +3,4 @@ firstapp/frontend/node_modules
 __pycache__
 firstapp/venv/
 */.env
-*.pyc
+*.pyc.env
