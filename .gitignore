@@ -4,3 +4,4 @@ __pycache__
 firstapp/venv/
 */.env
 *.pyc.env
+.DS_Store
