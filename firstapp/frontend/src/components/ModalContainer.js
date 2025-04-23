@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import "../styles/ModalContainer.css"; // Adjust the path to the styles folder
 import axios from "axios";
 import CONFIG from "../config";
+import { AuthContext } from "../contexts/AuthContext";
 
 const ModalContainer = ({
   isLoading,
@@ -10,6 +11,7 @@ const ModalContainer = ({
   evidence,
   classification,
 }) => {
+  const { user, workflowId } = useContext(AuthContext);
   const [chatHistory, setChatHistory] = useState([
     {
       sender: "agent",
@@ -22,6 +24,8 @@ const ModalContainer = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [responses, setResponses] = useState({});
   const [fetchLoading, setFetchLoading] = useState(Array(10).fill(false));
+  const [memoryStatus, setMemoryStatus] = useState({});
+
 
   const fetchEvidence = async (link, index) => {
     setFetchLoading((prev) => {
@@ -233,6 +237,39 @@ const ModalContainer = ({
     setIsModalOpen(false);
   };
 
+  const addEvidenceToMemory = async (evidenceText, uniqueKey) => {
+    console.log("Adding Evidence to memory:", {
+      evidence: evidenceText,
+      userId: user?.id,
+      workflowId: workflowId,
+    });
+   
+    if (!user?.id || !workflowId) {
+      console.warn("Missing user ID or workflow ID");
+      return;
+    }
+
+    try {
+      const response = await axios.post(`${CONFIG.BACKEND_URL}/api/add_evidence`, {
+        evidence: evidenceText,
+        userid: user.id,
+        workflowid: workflowId,
+      });
+  
+      if (response.status === 200) {
+        setMemoryStatus((prev) => ({ ...prev, [uniqueKey]: true }));
+      } else {
+        alert("Failed to add evidence to memory.");
+      }
+    } catch (error) {
+      console.error("Add to memory failed:", error);
+      alert("Error while adding to memory.");
+    }
+  };
+  
+  
+  
+
   // Content for "Gather information from external sources"
   return (
     <div
@@ -351,10 +388,49 @@ const ModalContainer = ({
                     {responses[index] && (
                       <div className="retrieved-evidences">
                         {responses[index].map((text, i) => (
-                          <div className="retrieved-evidence">
+                          <div 
+                            className="retrieved-evidence"
+                            key={i}
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "center",
+                              padding: "10px",
+                              backgroundColor: "#f2f0f0",
+                              borderRadius: "8px",
+                            }}
+                          >
                             <div className="retrieved-evidence-text">
                               <p key={i}>{text.text}</p>
                             </div>
+
+                            <img
+                              src={
+                                memoryStatus[`${index}-${i}`]
+                                  ? "icons/added_evidence.png"
+                                  : "icons/add_evidence.png"
+                              }
+                              alt="Add to Memory"
+                              title={
+                                memoryStatus[`${index}-${i}`]
+                                  ? "Already Added to Memory"
+                                  : "Add to Memory"
+                              }
+                              onClick={() => {
+                                if (!memoryStatus[`${index}-${i}`]) {
+                                  addEvidenceToMemory(text.text, `${index}-${i}`);
+                                }
+                              }}
+                              style={{
+                                marginLeft: "10px",
+                                cursor: memoryStatus[`${index}-${i}`] ? "default" : "pointer",
+                                height: "20px",
+                                width: "20px",
+                                opacity: memoryStatus[`${index}-${i}`] ? 0.5 : 1,
+                                flexShrink: 0,
+                              }}
+                            />
+
                           </div>
                         ))}
                       </div>

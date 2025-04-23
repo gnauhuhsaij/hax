@@ -73,10 +73,11 @@ def getName():
 
     # Initialize app and get the first responses
     app_id = str(uuid4())  # Generate a unique ID for this conversation
+    workflow_id = str(uuid4())
     app, responses = name_workflow(prompt, model)
 
     # Store app in the conversation store
     # conversation_store[app_id] = app
 
     # Return the unique ID and responses to the frontend
-    return jsonify({"app_id": app_id, "workflow_name": responses['messages'][-1].content})
+    return jsonify({"app_id": app_id, "workflow_id": workflow_id, "workflow_name": responses['messages'][-1].content})

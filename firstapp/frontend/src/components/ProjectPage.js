@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import CONFIG from "../config";
 
 const ProjectPage = () => {
-  const { user, currentWorkflow, setCurrentWorkflow, currentWorkflowName } =
+  const { user, currentWorkflow, setCurrentWorkflow, currentWorkflowName, setWorkflowId } =
     useContext(AuthContext); // Get user ID from AuthContext
   const [appId, setAppId] = useState(0);
   const [input, setInput] = useState("");
@@ -188,7 +188,7 @@ const ProjectPage = () => {
         { headers: { "Content-Type": "application/json" } }
       );
 
-      const { app_id, workflow_name } = response_workflowName.data;
+      const { app_id, workflow_id, workflow_name } = response_workflowName.data;
       const { wf, phase_names } = response2.data;
 
       const parsedWorkflow = Object.entries(wf).map(
@@ -206,6 +206,7 @@ const ProjectPage = () => {
 
       setWorkflow(parsedWorkflow); // Set workflow
       setWorkflowName(workflow_name);
+      setWorkflowId(workflow_id);
 
       uploadWorkflowToS3(JSON.stringify(parsedWorkflow), workflow_name);
 

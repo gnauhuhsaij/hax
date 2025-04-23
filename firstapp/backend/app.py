@@ -7,6 +7,7 @@ from routes.chat import chat_bp
 from routes.prompt_dig import dig_bp
 from routes.pc_evidence import pcev_bp
 from routes.scrape import scrape_bp
+from routes.memory import memory_bp
 
 app = Flask(__name__)
 CORS(app)
@@ -19,6 +20,7 @@ app.register_blueprint(dig_bp, url_prefix='/api')
 app.register_blueprint(wf_s3_bp, url_prefix='/api') 
 app.register_blueprint(pcev_bp, url_prefix='/api') 
 app.register_blueprint(scrape_bp, url_prefix='/api') 
+app.register_blueprint(memory_bp, url_prefix='/api')
 
 
 if __name__ == '__main__':

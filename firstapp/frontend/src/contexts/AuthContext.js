@@ -7,6 +7,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null); // Always starts as null for new visitors
   const [currentWorkflow, setCurrentWorkflow] = useState(null);
   const [currentWorkflowName, setCurrentWorkflowName] = useState(null);
+  const [workflowId, setWorkflowId] = useState(null);
 
   // Load user data from localStorage ONLY if the session is still active (refresh case)
   useEffect(() => {
@@ -34,6 +35,8 @@ export const AuthProvider = ({ children }) => {
         user,
         login,
         logout,
+        workflowId,
+        setWorkflowId,
         currentWorkflow,
         setCurrentWorkflow,
         currentWorkflowName,
