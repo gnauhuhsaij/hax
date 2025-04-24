@@ -387,18 +387,7 @@ const ModalContainer = ({
                     {responses[index] && (
                       <div className="retrieved-evidences">
                         {responses[index].map((text, i) => (
-                          <div
-                            className="retrieved-evidence"
-                            key={i}
-                            style={{
-                              display: "flex",
-                              justifyContent: "space-between",
-                              alignItems: "center",
-                              padding: "10px",
-                              backgroundColor: "#f2f0f0",
-                              borderRadius: "8px",
-                            }}
-                          >
+                          <div className="retrieved-evidence" key={i}>
                             <div
                               className={`score-bar ${
                                 text.score > 0.4
