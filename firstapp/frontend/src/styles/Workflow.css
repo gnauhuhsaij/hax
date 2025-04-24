@@ -14,7 +14,6 @@
   width: 100%;
   min-height: 100vh;
   gap: 30px;
-  padding-top: 13vh; /* Creates empty space at the top */
   overflow-y: hidden;
   position: relative;
 }
@@ -119,7 +118,7 @@
   position: absolute; /* Move to absolute positioning */
   max-width: 40vw;
   left: 5%; /* Align with the very left of the screen */
-  top: 10%;
+  top: 0%;
   transition: left 1s linear;
   z-index: 10;
   opacity: 0;
@@ -217,7 +216,7 @@
   align-items: center;
   width: 60%;
   height: 100vh;
-  top: 100px;
+  top: 0px;
   right: 0;
   padding: 0px; /* Optional: adjust padding to your needs */
   background: transparent;
@@ -232,7 +231,6 @@
 
 .left-column {
   position: absolute;
-  top: 100px;
   left: 0;
   width: 40%;
   padding: 20px;

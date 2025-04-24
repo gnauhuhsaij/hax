@@ -13,6 +13,7 @@ a {
 .dashboard {
   /* width: calc(100% - 14vh); */
   width: 100vh;
+  width: 90%;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -20,6 +21,7 @@ a {
   justify-content: flex-start;
   margin-top: 5vh;
   margin-left: calc(50% - 50vh);
+  margin-left: 5%;
   gap: 4%; /* Add spacing between elements */
   opacity: 0;
   transition: opacity 0.5s ease-in-out;
@@ -150,7 +152,7 @@ a {
 .status-btn {
   all: unset;
   display: inline-flex;
-  padding: 4px 16px;
+  padding: 6px 16px;
   justify-content: center;
   align-items: center;
   height: 100%;
@@ -179,6 +181,8 @@ a {
   width: 15%;
   display: flex;
   flex-direction: column;
+  align-items: flex-end;
+  justify-content: flex-end;
 }
 
 /* Start project button */
@@ -210,32 +214,59 @@ a {
 
 .projects {
   display: flex;
-  flex-direction: row;
-  height: 100%;
+  flex-wrap: wrap;
   gap: 2%;
+  justify-content: flex-start;
+  align-content: flex-start;
+  height: 100%;
+  box-sizing: border-box;
 }
 
 /* Individual project card */
 .project-card {
+  flex: 1 1 calc(94% / 4); /* 3 cards per row by default */
+  max-width: calc(94% / 4);
+  aspect-ratio: 4 / 3; /* Ensures height follows width */
+
   border-radius: var(--Card, 10px);
   border: 0.3px solid #b1b1b1;
   background: white;
   box-shadow: 2px 2px 10px 0px rgba(0, 0, 0, 0.1);
-  border-radius: 15px;
-  width: 32%;
-  height: 48%;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
+  overflow: hidden;
+}
+
+@media (max-width: 1500px) {
+  .project-card {
+    flex: 1 1 calc(96% / 3);
+    max-width: calc(96% / 3);
+  }
+}
+
+@media (max-width: 1200px) {
+  .project-card {
+    flex: 1 1 calc(98% / 2);
+    max-width: calc(98% / 2);
+  }
+}
+
+@media (max-width: 750px) {
+  .project-card {
+    flex: 1 1 calc(100%);
+    max-width: calc(100%);
+  }
 }
 
 .project-description {
   height: 52%;
+  max-height: 10vh;
   display: flex;
   padding: 11px 12px;
   flex-direction: column;
   align-items: flex-start;
-  gap: 15%;
+  gap: 0%;
   align-self: stretch;
   border-radius: 0px 0px var(--Card, 10px) var(--Card, 10px);
   background: #fff;
@@ -246,7 +277,7 @@ a {
   text-overflow: ellipsis;
   white-space: nowrap; /* Prevents text from wrapping */
   max-width: 90%;
-  height: 20%;
+  height: 35%;
   color: #000;
 
   /* www.notion.so/Inter/Medium */
@@ -267,12 +298,35 @@ a {
   height: 65%;
 }
 
-.project-member {
+.project-members {
   height: 35%;
   width: 100%;
-  background: blue;
+  /* background: blue; */
   display: flex;
   flex-direction: row;
+}
+.project-member {
+  /* background: red; */
+  display: flex;
+  flex-direction: row;
+  gap: 6%;
+}
+.account-icon {
+  border-radius: var(--Corner-Full, 1000px);
+  width: 1.5vh;
+  height: 1.5vh;
+  aspect-ratio: 1/1;
+}
+.username {
+  color: #000;
+  text-align: center;
+
+  /* www.notion.so/Inter/Regular */
+  font-family: var(--font-family-Font-1, Inter);
+  font-size: var(--font-size-12, 12px);
+  font-style: normal;
+  font-weight: var(--font-weight-400, 400);
+  line-height: var(--line-height-16, 16px); /* 133.333% */
 }
 
 .project-progress {
@@ -315,7 +369,7 @@ a {
 
 .project-image {
   width: 100%;
-  height: 55%;
+  min-height: 55%;
   border-radius: 10px 10px 0px 0px;
   background: #f0f0f0;
   flex-shrink: 0;

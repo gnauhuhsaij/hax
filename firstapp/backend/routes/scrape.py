@@ -19,7 +19,7 @@ def scrape():
             return jsonify({"error": "Missing required fields"}), 400
 
         # Call the retrieve_evidence function
-        final_results = retrieve_evidence(prompt, url)
+        final_results = retrieve_evidence(prompt, url, 0.2)
 
         return jsonify({"evidence": final_results}), 200
 

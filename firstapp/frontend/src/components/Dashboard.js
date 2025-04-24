@@ -51,7 +51,7 @@ const Dashboard = () => {
           response.data.workflowsNames.length > 0
         ) {
           // Get the most recent 3 workflows
-          setRecentProjects(response.data.workflowsNames.slice(0, 3));
+          setRecentProjects(response.data.workflowsNames.slice(0, 10));
         }
       } catch (error) {
         console.error("Error fetching workflows:", error);
@@ -172,7 +172,7 @@ const Dashboard = () => {
                 <p>In Progress</p>
               </button>
               <button className="status-btn">
-                <p>Recent</p>
+                <p>Done</p>
               </button>
             </div>
           </div>
@@ -205,7 +205,16 @@ const Dashboard = () => {
                     {project.replace(".json", "")}
                   </div>
                   <div className="project-management">
-                    <div className="project-member"></div>
+                    <div className="project-members">
+                    <div className="project-member">
+                      <img
+                        src={user ? user.picture : "/icons/ellipse.svg"}
+                        alt="Profile"
+                        className="account-icon"
+                      />
+                      <p className="username">{user.name}</p>
+                      </div>
+                    </div>
                     <div className="project-progress">
                       <div className="progress-text">In Progress</div>
                       <div className="progress-bar"></div>

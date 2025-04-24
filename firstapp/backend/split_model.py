@@ -150,6 +150,10 @@ flow_prompt = flow_prompt = """
     LLM: For generating insights, summaries, brainstorming, drafting, or reasoning from its trained knowledge base.
     Human: For tasks requiring human expertise, judgment, or creativity.
 
+    3. Step Summary needs to be informative. For example, if you framed the task initially as "Research information about xxx", you need to break it down further into what consist
+    of the information you need. Also, don't include any high-level steps: if you decided that you need to research about the annual tuition, acceptance rate, and world ranking of a university, then list them as three steos
+    separately.
+
     Please create a serialized workflow for this subtask, considering the context of the other parallel tasks and providing clear reasoning for the collaboration strategy between humans and AI.
 
     In your output, only include the workflow without any other explanation, in the format of

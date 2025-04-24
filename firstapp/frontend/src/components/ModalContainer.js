@@ -26,7 +26,6 @@ const ModalContainer = ({
   const [fetchLoading, setFetchLoading] = useState(Array(10).fill(false));
   const [memoryStatus, setMemoryStatus] = useState({});
 
-
   const fetchEvidence = async (link, index) => {
     setFetchLoading((prev) => {
       const newLoading = [...prev];
@@ -243,19 +242,22 @@ const ModalContainer = ({
       userId: user?.id,
       workflowId: workflowId,
     });
-   
+
     if (!user?.id || !workflowId) {
       console.warn("Missing user ID or workflow ID");
       return;
     }
 
     try {
-      const response = await axios.post(`${CONFIG.BACKEND_URL}/api/add_evidence`, {
-        evidence: evidenceText,
-        userid: user.id,
-        workflowid: workflowId,
-      });
-  
+      const response = await axios.post(
+        `${CONFIG.BACKEND_URL}/api/add_evidence`,
+        {
+          evidence: evidenceText,
+          userid: user.id,
+          workflowid: workflowId,
+        }
+      );
+
       if (response.status === 200) {
         setMemoryStatus((prev) => ({ ...prev, [uniqueKey]: true }));
       } else {
@@ -266,9 +268,6 @@ const ModalContainer = ({
       alert("Error while adding to memory.");
     }
   };
-  
-  
-  
 
   // Content for "Gather information from external sources"
   return (
@@ -337,7 +336,7 @@ const ModalContainer = ({
                       </div>
                     </div>
                     <div className="evidence-title">{item.title}</div>
-                    <div className="evidence-snippet">{item.score}</div>
+                    <div className="evidence-snippet">{item.snippet}</div>
                     <div className="lastRow">
                       <button
                         className="preview-button"
@@ -388,7 +387,7 @@ const ModalContainer = ({
                     {responses[index] && (
                       <div className="retrieved-evidences">
                         {responses[index].map((text, i) => (
-                          <div 
+                          <div
                             className="retrieved-evidence"
                             key={i}
                             style={{
@@ -400,6 +399,15 @@ const ModalContainer = ({
                               borderRadius: "8px",
                             }}
                           >
+                            <div
+                              className={`score-bar ${
+                                text.score > 0.4
+                                  ? "good"
+                                  : text.score > 0.3
+                                  ? "med"
+                                  : ""
+                              }`}
+                            ></div>
                             <div className="retrieved-evidence-text">
                               <p key={i}>{text.text}</p>
                             </div>
@@ -418,19 +426,25 @@ const ModalContainer = ({
                               }
                               onClick={() => {
                                 if (!memoryStatus[`${index}-${i}`]) {
-                                  addEvidenceToMemory(text.text, `${index}-${i}`);
+                                  addEvidenceToMemory(
+                                    text.text,
+                                    `${index}-${i}`
+                                  );
                                 }
                               }}
                               style={{
                                 marginLeft: "10px",
-                                cursor: memoryStatus[`${index}-${i}`] ? "default" : "pointer",
+                                cursor: memoryStatus[`${index}-${i}`]
+                                  ? "default"
+                                  : "pointer",
                                 height: "20px",
                                 width: "20px",
-                                opacity: memoryStatus[`${index}-${i}`] ? 0.5 : 1,
+                                opacity: memoryStatus[`${index}-${i}`]
+                                  ? 0.5
+                                  : 1,
                                 flexShrink: 0,
                               }}
                             />
-
                           </div>
                         ))}
                       </div>

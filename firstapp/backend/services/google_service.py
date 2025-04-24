@@ -129,22 +129,22 @@ def call_google_search_api(query):
             })
 
         # Step 2: Scrape subpages of top 3 items
-        for top_result in all_items[:3]:
-            subpages = get_subpages_from_homepage(top_result["link"], max_links=10)
-            print(subpages)
-            for subpage in subpages:
-                sub_favicon = get_favicon(subpage)
-                sub_score = similarity_score(query, subpage)
-                all_items.append({
-                    "title": subpage,  # No title, so using URL
-                    "link": subpage,
-                    "snippet": "Subpage of " + top_result["link"],
-                    "favicon": sub_favicon,
-                    "score": float(sub_score[0][0])
-                })
+        # for top_result in all_items[:3]:
+        #     subpages = get_subpages_from_homepage(top_result["link"], max_links=10)
+        #     print(subpages)
+        #     for subpage in subpages:
+        #         sub_favicon = get_favicon(subpage)
+        #         sub_score = similarity_score(query, subpage)
+        #         all_items.append({
+        #             "title": subpage,  # No title, so using URL
+        #             "link": subpage,
+        #             "snippet": "Subpage of " + top_result["link"],
+        #             "favicon": sub_favicon,
+        #             "score": float(sub_score[0][0])
+        #         })
 
         # Step 3: Sort and return top 5
-        top_results = sorted(all_items, key=lambda x: x["score"], reverse=True)[:5]
+        top_results = sorted(all_items, key=lambda x: x["score"], reverse=True)[:8]
         return {"success": True, "evidence": top_results}
 
     except requests.exceptions.RequestException as e:

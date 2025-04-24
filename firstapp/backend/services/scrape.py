@@ -2,9 +2,14 @@ import requests
 from bs4 import BeautifulSoup
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
-import numpy as np
+import os
+import json
 import re
 import random
+import time
+import traceback
+import pymupdf
+from urllib.parse import urlparse
 
 def scrape_website(url):
     """
@@ -20,20 +25,36 @@ def scrape_website(url):
     session = requests.Session()
     session.headers.update(headers)
 
-    response = session.get(url)
+    if url.lower().endswith(".pdf"):
+        response = session.get(url)
+        response.raise_for_status()
 
-    response.raise_for_status()  # Ensure successful request
+        with open("temp.pdf", "wb") as f:
+            f.write(response.content)
 
-    soup = BeautifulSoup(response.text, "html.parser")
+        # Use PyMuPDF to extract text
+        doc = pymupdf.open("temp.pdf") # open a document
+        text = ""
+        for page in doc: # iterate the document pages
+            text += page.get_text()
+        os.remove("temp.pdf")  # Clean up
+        return re.sub(r"\s+", " ", text).strip()
+    else:
 
-     # Extract meaningful content (paragraphs and headers)
-    text_elements = soup.find_all(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'])
-    text = " ".join(element.get_text() for element in text_elements)
+        response = session.get(url)
 
-    # Remove extra spaces, newlines, and special characters
-    text = re.sub(r"\s+", " ", text).strip()
+        response.raise_for_status()  # Ensure successful request
 
-    return text
+        soup = BeautifulSoup(response.text, "html.parser")
+
+        # Extract meaningful content (paragraphs and headers)
+        text_elements = soup.find_all(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'])
+        text = " ".join(element.get_text() for element in text_elements)
+
+        # Remove extra spaces, newlines, and special characters
+        text = re.sub(r"\s+", " ", text).strip()
+
+        return text
 
 def split_text(text, chunk_size=300):
     """
@@ -96,40 +117,78 @@ def similarity_search(prompt, partitions, threshold=0.5):
     Returns:
         list: Relevant partitions with similarity scores.
     """
-    model = SentenceTransformer("all-MiniLM-L6-v2")  # Efficient embedding model
-    # Generate embeddings
-    prompt_embedding = model.encode([prompt])
-    partition_embeddings = model.encode(partitions)
-    # print(prompt_embedding.shape, partition_embeddings.shape)
-
-
-    # Compute cosine similarity
-    similarity = cosine_similarity(prompt_embedding, partition_embeddings)[0]
-
-        # Filter partitions based on threshold
-    filtered_partitions = [
-        {"text": partitions[i]}
-        for i in range(len(partitions))
-        if similarity[i] > threshold
-    ]
-    print(similarity)
-
-    # Sort by relevance (descending similarity)
-    # filtered_partitions.sort(key=lambda x: x["score"], reverse=True)
-
-    return filtered_partitions
-
-def retrieve_evidence(prompt, url):
     try:
-        # Step 1: Scrape website
-        web_text = scrape_website(url)
-        # Step 2: Partition text
-        partitions = split_text(web_text)
-        # Step 3: Perform similarity search
-        results = similarity_search(prompt, partitions, threshold = 0.5)
-        final_results = random.sample(results, k=min(10, len(results)))
-        print(len(final_results))
-        return final_results
+        model = SentenceTransformer("all-MiniLM-L6-v2")  # Efficient embedding model
+        # Generate embeddings
+        prompt_embedding = model.encode([prompt])
+        partition_embeddings = model.encode(partitions)
+        # print(prompt_embedding.shape, partition_embeddings.shape)
+
+
+        # Compute cosine similarity
+        similarity = cosine_similarity(prompt_embedding, partition_embeddings)[0]
+
+            # Filter partitions based on threshold
+        filtered_partitions = [
+            {"text": partitions[i], "score": float(similarity[i])}
+            for i in range(len(partitions))
+            if similarity[i] > threshold
+        ]
+
+        # Sort by relevance (descending similarity)
+        filtered_partitions.sort(key=lambda item: item['score'], reverse=True)
+        return filtered_partitions
+    except Exception as e:
+        print("Error during similarity search:", e)
+        traceback.print_exc()
+        return []
+
+
+def retrieve_evidence(prompt, url, threshold):
+    logs = {}
+    print(prompt, url)
+    try:
+        start_time = time.time()
         
-    except requests.exceptions.RequestException as e:
-        print(e)
+        # Step 1: Scrape
+        scrape_start = time.time()
+        web_text = scrape_website(url)
+        scrape_end = time.time()
+        logs["scrape_time"] = scrape_end - scrape_start
+        # Step 2: Partition
+        split_start = time.time()
+        partitions = split_text(web_text)
+        split_end = time.time()
+        logs["split_time"] = split_end - split_start
+
+        # Step 3: Similarity search
+        sim_start = time.time()
+        results = similarity_search(prompt, partitions, threshold)
+        sim_end = time.time()
+        logs["similarity_search_time"] = sim_end - sim_start
+
+        # Step 4: Final selection
+        final_start = time.time()
+        final_results = results
+        # final_results = random.sample(results, k=min(10, len(results)))
+        final_end = time.time()
+        logs["filtering_time"] = final_end - final_start
+
+        total_time = time.time() - start_time
+        logs["total_time"] = total_time
+        logs["num_results"] = len(final_results)
+        
+        # Save log to file
+        log_dir = "logs"
+        os.makedirs(log_dir, exist_ok=True)
+        timestamp = int(time.time())
+        log_path = os.path.join(log_dir, f"log_{timestamp}.json")
+        with open(log_path, "w") as f:
+            json.dump(logs, f, indent=2)
+
+        return final_results
+
+    except Exception as e:
+        print("Error\:", e)
+        traceback.print_exc()
+        return []
