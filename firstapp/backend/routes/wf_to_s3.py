@@ -3,6 +3,7 @@ import boto3
 import json
 import uuid
 from flask_cors import cross_origin
+from uuid import uuid4
 
 wf_s3_bp = Blueprint("wf_s3", __name__)
 
@@ -17,8 +18,10 @@ def upload_s3():
         user_id = data.get("user_id")  # Unique Google ID
         workflow = data.get("workflow")  # Workflow data
         workflowName = data.get("workflowName")
-        if not user_id or not workflow:
-            return jsonify({"error": "Missing user_id or workflow"}), 400
+        workflow_id = data.get('workflow_id') or str(uuid4()) # Get workflow ID
+        
+        if not user_id or not workflow or not workflow_id:
+            return jsonify({"error": "Missing user_id, workflow, or workflow_id"}), 400
 
         if isinstance(workflow, str):
             print("Warning: workflow is already a string. Avoiding double encoding.", flush=True)
@@ -26,13 +29,24 @@ def upload_s3():
         else:
             workflow_json = json.dumps(workflow)  # Convert if necessary
 
+        # Create metadata object
+        metadata = {
+            "workflow_id": workflow_id,
+            "workflow_name": workflowName or "",
+            "user_id": user_id
+        }
+
         # Generate unique filename
         s3_key = f"{user_id}/{workflowName}/workflow_object.json"
 
         # Upload to S3
-        s3_client.put_object(Bucket=S3_BUCKET_NAME, Key=s3_key, Body=workflow_json)
-
-        return jsonify({"message": "Workflow saved successfully", "s3_path": s3_key})
+        s3_client.put_object(Bucket=S3_BUCKET_NAME, Key=s3_key, Body=workflow_json, Metadata=metadata)
+        
+        return jsonify({
+            "message": "Workflow saved successfully",
+            "s3_path": s3_key,
+            "workflow_id": workflow_id
+        })
     
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -50,7 +64,12 @@ def get_workflow():
     try:
         response = s3_client.get_object(Bucket=S3_BUCKET_NAME, Key=file_key)
         workflow_data = json.loads(response["Body"].read().decode("utf-8"))
-        return jsonify({"workflow": workflow_data, "workflowName": project_name}), 200
+        workflow_id = response.get("Metadata", {}).get("workflow_id")
+        return jsonify({
+            "workflow": workflow_data,
+            "workflowName": project_name,
+            "workflow_id": workflow_id
+        }), 200
     except s3_client.exceptions.NoSuchKey:
         return jsonify({"error": "Workflow not found"}), 404
     except Exception as e:
@@ -70,16 +89,28 @@ def list_workflows():
         if "Contents" not in response:
             return jsonify({"workflows": []})  # No files found
 
-        # Extract workflow file names from S3 response
-        workflow_files = [obj["Key"].split("/")[-1] for obj in response["Contents"]]
+        # Get workflow metadata for each workflow
+        workflows = []
+        for obj in response["Contents"]:
+            try:
+                metadata = s3_client.head_object(
+                    Bucket=S3_BUCKET_NAME,
+                    Key=obj["Key"]
+                ).get("Metadata", {})
+                
+                workflows.append({
+                    "name": obj["Key"].split("/")[1],
+                    "workflow_id": metadata.get("workflow_id"),
+                    "last_modified": obj["LastModified"].isoformat()
+                })
+            except Exception as e:
+                print(f"Error getting metadata for {obj['Key']}: {str(e)}")
+                continue
 
-        # Sort by last modified time (if available) - Optional
-        sorted_workflows = sorted(
-            response["Contents"], key=lambda x: x["LastModified"], reverse=True
-        )
-        workflow_names = [obj["Key"].split("/")[1] for obj in sorted_workflows]
+        # Sort by last modified time
+        sorted_workflows = sorted(workflows, key=lambda x: x["last_modified"], reverse=True)
 
-        return jsonify({"workflowsNames": workflow_names})
+        return jsonify({"workflows": sorted_workflows})
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500

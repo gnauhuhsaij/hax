@@ -6,7 +6,7 @@ import "../styles/Dashboard.css";
 import CONFIG from "../config";
 
 const Dashboard = () => {
-  const { user, setCurrentWorkflow, setCurrentWorkflowName } =
+  const { user, setCurrentWorkflow, setCurrentWorkflowName, setWorkflowId } =
     useContext(AuthContext); // Get user ID and setCurrentWorkflow from AuthContext
   const [recentProjects, setRecentProjects] = useState([]);
   const navigate = useNavigate();
@@ -80,6 +80,7 @@ const Dashboard = () => {
         setTimeout(() => {
           setCurrentWorkflow(JSON.stringify(response.data.workflow));
           setCurrentWorkflowName(JSON.stringify(response.data.workflowName));
+          setWorkflowId(response.data.workflow_id); // Set workflow ID from response
           navigate("/start-project"); // Redirect after animation
         }, 300); // Matches the CSS animation duration
       }

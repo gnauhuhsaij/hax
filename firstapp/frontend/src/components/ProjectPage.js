@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import CONFIG from "../config";
 
 const ProjectPage = () => {
-  const { user, currentWorkflow, setCurrentWorkflow, currentWorkflowName, setWorkflowId } =
+  const { user, currentWorkflow, setCurrentWorkflow, currentWorkflowName, setWorkflowId, setCurrentWorkflowName } =
     useContext(AuthContext); // Get user ID from AuthContext
   const [appId, setAppId] = useState(0);
   const [input, setInput] = useState("");
@@ -75,11 +75,33 @@ const ProjectPage = () => {
 
   useEffect(() => {
     if (currentWorkflow) {
-      console.log(workflow);
-      console.log(JSON.stringify(currentWorkflow));
-      setWorkflow(JSON.parse(currentWorkflow));
+      try {
+        // If currentWorkflow is already an object, use it directly
+        if (typeof currentWorkflow === 'object') {
+          setWorkflow(currentWorkflow);
+        } else {
+          // Try to parse it as JSON
+          setWorkflow(JSON.parse(currentWorkflow));
+        }
+      } catch (error) {
+        console.error('Error parsing workflow:', error);
+        setWorkflow(null);
+      }
     }
-    if (currentWorkflowName) setWorkflowName(JSON.parse(currentWorkflowName));
+    if (currentWorkflowName) {
+      try {
+        // If currentWorkflowName is already a string, use it directly
+        if (typeof currentWorkflowName === 'string') {
+          setWorkflowName(currentWorkflowName);
+        } else {
+          // Try to parse it as JSON
+          setWorkflowName(JSON.parse(currentWorkflowName));
+        }
+      } catch (error) {
+        console.error('Error parsing workflow name:', error);
+        setWorkflowName(null);
+      }
+    }
   }, [currentWorkflow]);
 
   useEffect(() => {
@@ -101,16 +123,25 @@ const ProjectPage = () => {
     }
   };
 
-  const uploadWorkflowToS3 = async (workflowData, workflowName) => {
+  const uploadWorkflowToS3 = async (workflowData, workflowName, workflowId) => {
     if (!user) return; // Ensure user is logged in
 
     try {
-      await axios.post(`${CONFIG.BACKEND_URL}/api/upload_workflows`, {
+      const response = await axios.post(`${CONFIG.BACKEND_URL}/api/upload_workflows`, {
         user_id: user.id, // Unique Google user ID
         workflow: workflowData,
         workflowName: workflowName,
+        workflow_id: workflowId
       });
-      console.log("Workflow uploaded successfully");
+      if (response.status === 200) {
+        const returnedWorkflowId = response.data.workflow_id;
+        console.log("Workflow uploaded successfully with workflow_id:", returnedWorkflowId);
+  
+        // Update the frontend with the returned ID if necessary
+        if (!workflowId && returnedWorkflowId) {
+          setWorkflowId(returnedWorkflowId);
+        }
+      }
     } catch (error) {
       console.error("Error uploading workflow to S3:", error);
     }
@@ -206,12 +237,14 @@ const ProjectPage = () => {
 
       setWorkflow(parsedWorkflow); // Set workflow
       setWorkflowName(workflow_name);
-      setWorkflowId(workflow_id);
+      setWorkflowId(workflow_id); // Set workflow ID in context
 
-      uploadWorkflowToS3(JSON.stringify(parsedWorkflow), workflow_name);
+      // Upload workflow with its ID
+      uploadWorkflowToS3(JSON.stringify(parsedWorkflow), workflow_name, workflow_id);
 
       // Save workflow and phase names to localStorage
       setCurrentWorkflow(JSON.stringify(parsedWorkflow));
+      setCurrentWorkflowName(workflow_name);
     } catch (error) {
       console.error("Error during submission:", error);
     } finally {
