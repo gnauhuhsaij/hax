@@ -9,11 +9,15 @@ export const AuthProvider = ({ children }) => {
   const [currentWorkflowName, setCurrentWorkflowName] = useState(null);
   const [workflowId, setWorkflowId] = useState(null);
 
-  // Load user data from localStorage ONLY if the session is still active (refresh case)
+  // Load user data and workflow ID from localStorage ONLY if the session is still active (refresh case)
   useEffect(() => {
     const savedUser = JSON.parse(localStorage.getItem("user"));
+    const savedWorkflowId = localStorage.getItem("workflowId");
     if (savedUser) {
       setUser(savedUser);
+    }
+    if (savedWorkflowId) {
+      setWorkflowId(savedWorkflowId);
     }
   }, []);
 
@@ -26,7 +30,19 @@ export const AuthProvider = ({ children }) => {
   // Logout function: Clears session state
   const logout = () => {
     setUser(null);
+    setWorkflowId(null);
     localStorage.removeItem("user"); // Remove session storage
+    localStorage.removeItem("workflowId");
+  };
+
+  // Set workflow ID and persist it
+  const setWorkflowIdPersist = (id) => {
+    setWorkflowId(id);
+    if (id) {
+      localStorage.setItem("workflowId", id);
+    } else {
+      localStorage.removeItem("workflowId");
+    }
   };
 
   return (
@@ -36,7 +52,7 @@ export const AuthProvider = ({ children }) => {
         login,
         logout,
         workflowId,
-        setWorkflowId,
+        setWorkflowId: setWorkflowIdPersist,
         currentWorkflow,
         setCurrentWorkflow,
         currentWorkflowName,
