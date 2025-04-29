@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import CONFIG from "../config";
 
 const ProjectPage = () => {
-  const { user, currentWorkflow, setCurrentWorkflow, currentWorkflowName, setWorkflowId, setCurrentWorkflowName } =
+  const { user, currentWorkflow, setCurrentWorkflow, currentWorkflowName, setWorkflowId, setCurrentWorkflowName, workflowId } =
     useContext(AuthContext); // Get user ID from AuthContext
   const [appId, setAppId] = useState(0);
   const [input, setInput] = useState("");
@@ -34,6 +34,8 @@ const ProjectPage = () => {
   const [promptTags, setPromptTags] = useState([]);
   const [summaryMode, setSummaryMode] = useState(false);
   const [reviseMode, setReviseMode] = useState(false);
+  const [memoryOpen, setMemoryOpen] = useState(false);
+  const [memoryData, setMemoryData] = useState([]);
 
   //渐进渐出
   useEffect(() => {
@@ -272,6 +274,22 @@ const ProjectPage = () => {
     setFormattedMessage(words);
   }, [centerMessage, user]);
 
+  const openMemory = async () => {
+    try {
+      const response = await axios.get(`${CONFIG.BACKEND_URL}/api/list_all_evidence`, {
+        params: {
+          userid: user.id,
+          workflowid: workflowId,
+        },
+      });
+      setMemoryData(response.data.evidences);
+      setMemoryOpen(true);
+    } catch (error) {
+      console.error('Error fetching memory data:', error);
+      setMemoryOpen(true); // Still open, show empty
+    }
+  };
+
   return (
     <div className={`null-wrapper ${isVisible ? "visible" : ""}`}>
       {!workflow ? (
@@ -453,6 +471,40 @@ const ProjectPage = () => {
         <div>
           <div className="workflow-name">{workflowName}</div>
           <Workflow workflow={workflow} workflowName={workflowName} />
+
+          {/* Memory Button here */}
+          <button
+            className="memory-button"
+            onClick={openMemory}
+          >
+            <img src="/icons/memory_icon.svg" alt="Memory" style={{ width: "40px", height: "40px" }} />
+          </button>
+
+          {/* Memory Modal here */}
+          {memoryOpen && (
+            <div className="memory-modal">
+              <div className="memory-modal-content">
+                <h2>Memory for this Project</h2>
+                <div className="memory-grid">
+                  {memoryData.length === 0 ? (
+                    <p>No saved memories yet.</p>
+                  ) : (
+                    memoryData.map((item, index) => (
+                      <div key={index} className="memory-card">
+                        <p>{item.text}</p>
+                      </div>
+                    ))
+                  )}
+                </div>
+                <img
+                  src="/icons/minimize.svg"
+                  alt="Minimize"
+                  className="minimize-icon"
+                  onClick={() => setMemoryOpen(false)}
+                />
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
