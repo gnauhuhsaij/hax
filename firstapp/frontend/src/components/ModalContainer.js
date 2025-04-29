@@ -25,6 +25,7 @@ const ModalContainer = ({
   const [responses, setResponses] = useState({});
   const [fetchLoading, setFetchLoading] = useState(Array(10).fill(false));
   const [memoryStatus, setMemoryStatus] = useState({});
+  const [answeredQuestions, setAnsweredQuestions] = useState([]);
 
   const fetchEvidence = async (link, index) => {
     setFetchLoading((prev) => {
@@ -75,38 +76,34 @@ const ModalContainer = ({
   const sendMessage = async () => {
     try {
       let response;
-
+  
       if (!appId) {
-        // First request to initialize the chat
         response = await axios.post(`${CONFIG.BACKEND_URL}/api/chat`, {
           nested_tasks: step.name,
         });
-
+  
         if (response.status === 200) {
           const { app_id, responses } = response.data;
-          setAppId(app_id); // Save the app_id for future requests
+          setAppId(app_id);
+  
           const initialResponse = {
-            sender: "agent",
-            text: responses, // Adjust based on actual response format
+            sender: responses[0]?.sender || "agent",
+            text: responses[0]?.text || "",
+            options: responses[0]?.options || [],
           };
-          // Replace the placeholder message with the actual response
+  
           setChatHistory([initialResponse]);
         } else {
           console.error("Failed to initialize chat:", response.data.error);
-          setChatHistory((prev) => [
-            ...prev,
-            { sender: "agent", text: "Failed to initialize chat." },
-          ]);
+          setChatHistory([{ sender: "agent", text: "Failed to initialize chat." }]);
         }
       }
     } catch (error) {
       console.error("Error in chat initialization:", error);
-      setChatHistory((prev) => [
-        ...prev,
-        { sender: "agent", text: "Error occurred during initialization." },
-      ]);
+      setChatHistory([{ sender: "agent", text: "Error occurred during initialization." }]);
     }
   };
+  
 
   // useEffect(() => {
   //   if (
@@ -123,90 +120,148 @@ const ModalContainer = ({
   }, []); // Empty dependency array ensures it runs only once
 
   const handleUserInput = async () => {
-    if (!userInput.trim()) return;
-
-    // Add user message to chat history
-    const userMessage = { sender: "user", text: userInput };
-    setChatHistory((prev) => [...prev, userMessage]);
-
-    // Clear the input box
-    setUserInput("");
-
+    const latestMessageIndex = chatHistory.length - 1;
+    const userAnswer = chatHistory[latestMessageIndex]?.userAnswer;
+  
+    if (!userAnswer || !userAnswer.trim()) return;
+  
+    // Add user message first
+    const userMessage = { sender: "user", text: userAnswer };
+    setChatHistory(prev => [...prev, userMessage]);
+  
     try {
       const response = await axios.post(`${CONFIG.BACKEND_URL}/api/chat2`, {
         app_id: appId,
-        user_response: userInput,
+        user_response: userAnswer,
       });
-
+  
       if (response.status === 200) {
         const { responses } = response.data;
+  
         const agentMessage = {
-          sender: "agent",
-          text: responses, // Adjust based on actual response format
+          sender: responses[0]?.sender || "agent",
+          text: responses[0]?.text || "",
+          options: responses[0]?.options || [],
         };
-        setChatHistory((prev) => [...prev, agentMessage]);
+  
+        setChatHistory(prev => [...prev, agentMessage]);
       } else {
         console.error("Failed to send message:", response.data.error);
       }
     } catch (error) {
       console.error("Error in chat communication:", error);
     }
-  };
+  };  
+  
 
   if (classification === "Gather information from user") {
+    const handleSuggestedAnswerClick = (answer, messageIndex) => {
+      setChatHistory(prev => {
+        const newHistory = [...prev];
+        newHistory[messageIndex].userAnswer = answer;
+        return newHistory;
+      });
+    };
+  
+    const handleInputChange = (e, messageIndex) => {
+      setChatHistory(prev => {
+        const newHistory = [...prev];
+        newHistory[messageIndex].userAnswer = e.target.value;
+        return newHistory;
+      });
+    };
+  
+    const handleUserSubmit = async (messageIndex) => {
+      const userAnswer = chatHistory[messageIndex]?.userAnswer;
+      if (!userAnswer || !userAnswer.trim()) return;
+    
+      // Step 1: 先把当前回答锁死，避免继续改
+      setChatHistory(prev => {
+        const newHistory = [...prev];
+        newHistory[messageIndex].submitted = true; // 标记为已经提交
+        return [...newHistory, { sender: "user", text: userAnswer }]; // 加入用户自己的回答
+      });
+    
+      try {
+        const response = await axios.post(`${CONFIG.BACKEND_URL}/api/chat2`, {
+          app_id: appId,
+          user_response: userAnswer,
+        });
+    
+        if (response.status === 200) {
+          const { responses } = response.data;
+          const agentMessage = {
+            sender: responses[0]?.sender || "agent",
+            text: responses[0]?.text || "",
+            options: responses[0]?.options || [],
+          };
+    
+          setChatHistory(prev => [...prev, agentMessage]);
+        } else {
+          console.error("Failed to send message:", response.data.error);
+        }
+      } catch (error) {
+        console.error("Error in chat communication:", error);
+      }
+    };
+    
+
     return (
-      <div
-        className="modal-container user"
-        onClick={(e) => {
-          e.stopPropagation();
-        }}
-      >
+      <div className="modal-container user" onClick={(e) => e.stopPropagation()}>
+        <div className="page-title">Gather Information about ...</div>
         <div className="chat-container">
           <div className="chat-history">
             {chatHistory.map((message, index) => (
-              <div
-                key={index}
-                className={`chat-message ${
-                  message.sender === "user" ? "user-message" : "agent-message"
-                }`}
-              >
-                {message.sender === "agent" && (
-                  <img
-                    src="icons/hax.png"
-                    alt="hax"
-                    className="icon-circle agent-icon"
-                  ></img>
-                )}
-                <div
-                  className={`message-text ${
-                    message.sender === "user" ? "user" : "agent"
-                  }`}
-                >
-                  {message.text}
+              message.sender === "agent" && (
+                <div key={index} className="question-block">
+                  {/* 问题文本 */}
+                  <div className="question-text">{message.text}</div>
+  
+                  {/* Possible answers */}
+                  {message.options && (
+                    <div className="suggested-answers">
+                      <div className="options-title">Options:</div>  {/* ⭐新增一行小标题 */}
+                      <div className="options-list">
+                        {message.options.map((option, optIdx) => (
+                          <span
+                            key={optIdx}
+                            className="suggested-answer"
+                            onClick={() => handleSuggestedAnswerClick(option, index)}
+                          >
+                            {option}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+  
+                  {/* 用户输入框 */}
+                  <div className="answer-input-container">
+                    <input
+                      type="text"
+                      className="answer-input"
+                      placeholder="Type your answer or select from suggestions..."
+                      value={message.userAnswer || ""}
+                      onChange={(e) => handleInputChange(e, index)}
+                    />
+                    <button onClick={() => handleUserSubmit(index)}>
+                      <img
+                        src="icons/send.svg"
+                        alt="Send"
+                        className="chat-input-button"
+                      />
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )
             ))}
-          </div>
-          <div className="chat-input">
-            <input
-              type="text"
-              value={userInput}
-              onChange={(e) => setUserInput(e.target.value)}
-              placeholder="Type your message..."
-            />
-            <button onClick={handleUserInput}>
-              {" "}
-              <img
-                src="icons/send.svg"
-                alt="Send"
-                className="chat-input-button"
-              ></img>
-            </button>
           </div>
         </div>
       </div>
     );
   }
+  
 
   if (classification !== "Gather information from external sources") {
     return (
@@ -464,3 +519,5 @@ const ModalContainer = ({
 };
 
 export default ModalContainer;
+
+

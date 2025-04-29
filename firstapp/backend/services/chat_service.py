@@ -48,12 +48,14 @@ def chat_init(nested_tasks, model="gpt-3.5-turbo"):
 
     chat = ChatOpenAI(model=model, temperature=0.7)
     def call_chat(state: MessagesState):
-        system_prompt = ("""You are a helpful assistant tasked with asking the user questions to 
-                         complete a information-gathering task. Ask only one question each time. 
-                         Ask 5 questions at least. When you think you have gathered enough information, 
-                         stop asking and summarize all evidence sent by the users in a coherent, 
-                         non-bullet-point way. You don't have to ask all the times but also address users' questions.
-                        But ALWAYS END in a summary of gathered information, and keep your response short""")
+        system_prompt = ("""You are a helpful assistant tasked with asking the user questions to complete an information-gathering task.
+
+                        IMPORTANT RULES:
+                        - Ask only ONE single question at a time.
+                        - Do NOT combine multiple questions into one message.
+                        - Wait for user's answer before asking the next question.
+                        - After gathering enough information, summarize all evidence clearly (no bullet points).
+                        - Keep your questions and summary concise. If you disobey and ask multiple questions at once, your output will be considered invalid.""")
         messages = [SystemMessage(content=system_prompt)] + state["messages"]
         response = chat.invoke(messages)
         return {"messages": response}

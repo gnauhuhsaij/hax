@@ -385,3 +385,116 @@
     transform: rotate(360deg);
   }
 }
+
+.suggested-answers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.option-button {
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #f5f5f5;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.option-button:hover {
+  background-color: #dceeff;
+}
+
+/* 新的问题块整体样式 */
+.question-block {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 30px;
+  padding: 10px;
+  border-radius: 8px;
+  background-color: transparent;
+}
+
+/* 问题文字 */
+.question-text {
+  font-family: "Noto Sans", sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  margin-bottom: 10px;
+  color: #222;
+}
+
+/* possible answers 区域（横向排列） */
+.suggested-answers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 10px;
+}
+
+/* 每个 possible answer */
+.suggested-answer {
+  font-family: "Noto Sans", sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: #000;
+  text-decoration: underline;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+/* possible answer 鼠标悬停效果 */
+.suggested-answer:hover {
+  color: #007bff;
+  text-decoration: underline;
+}
+
+/* 用户输入的 input 区域 */
+.answer-input-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* 输入框本身 */
+.answer-input {
+  flex: 1;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+/* 发送按钮 */
+.chat-input-button {
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+}
+
+/* "Options:" 小标题 */
+.options-title {
+  font-family: "Noto Sans", sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: #222;
+  margin-bottom: 4px;
+}
+
+.options-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.page-title {
+  font-family: "Noto Sans", sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  color: #222;
+  text-align: center;
+  margin-bottom: 20px;
+}
