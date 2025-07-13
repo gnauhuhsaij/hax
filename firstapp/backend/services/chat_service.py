@@ -53,7 +53,7 @@ def chat_init(nested_tasks, model="gpt-3.5-turbo"):
                          Ask 5 questions at least. When you think you have gathered enough information, 
                          stop asking and summarize all evidence sent by the users in a coherent, 
                          non-bullet-point way. You don't have to ask all the times but also address users' questions.
-                        But ALWAYS END in a summary of gathered information, and keep your response short""")
+                        But ALWAYS END in a summary of gathered information, and keep your response short. In your final response you have to finish exactly with [END]""")
         messages = [SystemMessage(content=system_prompt)] + state["messages"]
         response = chat.invoke(messages)
         return {"messages": response}

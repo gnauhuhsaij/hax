@@ -231,8 +231,9 @@
 
 .left-column {
   position: absolute;
-  left: 0;
-  width: 40%;
+  right: 60%;
+  max-width: 40%;
+  width: 60vh;
   padding: 20px;
   display: flex;
   flex-direction: column;

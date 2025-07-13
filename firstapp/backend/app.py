@@ -8,7 +8,7 @@ from routes.prompt_dig import dig_bp
 from routes.pc_evidence import pcev_bp
 from routes.scrape import scrape_bp
 from routes.memory import memory_bp
-
+from routes.rag import rag_bp
 app = Flask(__name__)
 CORS(app)
 
@@ -21,7 +21,10 @@ app.register_blueprint(wf_s3_bp, url_prefix='/api')
 app.register_blueprint(pcev_bp, url_prefix='/api') 
 app.register_blueprint(scrape_bp, url_prefix='/api') 
 app.register_blueprint(memory_bp, url_prefix='/api')
+app.register_blueprint(rag_bp, url_prefix='/api')
+
 
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000)
+

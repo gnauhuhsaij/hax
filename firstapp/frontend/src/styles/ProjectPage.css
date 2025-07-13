@@ -194,6 +194,8 @@ body {
 .workflow-name {
   position: relative;
   display: flex;
+  flex-direction: row;
+  gap: 20px;
   width: 100%;
   height: 100px;
   /* transform: translate(-50%, -50%); */

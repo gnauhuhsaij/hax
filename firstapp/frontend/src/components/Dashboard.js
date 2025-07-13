@@ -46,12 +46,13 @@ const Dashboard = () => {
           }
         );
 
-        if (
-          response.data.workflowsNames &&
-          response.data.workflowsNames.length > 0
-        ) {
-          // Get the most recent 3 workflows
-          setRecentProjects(response.data.workflowsNames.slice(0, 10));
+        if (response.data.workflows && response.data.workflows.length > 0) {
+          // Map to tuples (name, last_modified)
+          const recent = response.data.workflows
+            .slice(0, 10) // Take first 10
+            .map((wf) => [wf.name, wf.last_modified]); // Convert each object to a tuple
+
+          setRecentProjects(recent);
         }
       } catch (error) {
         console.error("Error fetching workflows:", error);
@@ -105,21 +106,46 @@ const Dashboard = () => {
           isExiting ? "exiting" : isVisible ? "visible" : ""
         }`}
       >
-        <Link to="/start-project">
-          <button className="start-project-btn">
-            <p>+ Start a project</p>
-          </button>
-        </Link>
-
+        <div className="announcements">
+          <div className="ADescription">{formattedDate}</div>
+          <div className="ASection">
+            💪 A productive morning leads to a confident evening. Pick a task
+            and dive in! ☀️ 💼
+          </div>
+        </div>
+        <div className="quickStart">
+          <div className="QSDescription">Quick Tasks to Start...</div>
+          <div className="QSSection"></div>
+        </div>
         <div className="project-section">
-          <h3>Recent</h3>
-          <div className="projects">
-            {[1, 2, 3, 4].map((index) => (
-              <div key={index} className="project-card placeholder">
-                <div className="project-header placeholder"></div>
-                <div className="project-image placeholder"></div>
+          <div className="project-headings">
+            <div className="headings-left">
+              <div className="myProject">My Projects</div>
+              <div className="statusRow">
+                <button className="status-btn">
+                  <p>In Progress</p>
+                </button>
+                <button className="status-btn">
+                  <p>Done</p>
+                </button>
               </div>
-            ))}
+            </div>
+            <div className="headings-right">
+              <button
+                className="start-project-btn"
+                onClick={() => handleNewProject()}
+              >
+                <p>+ Start a project</p>
+              </button>
+            </div>
+          </div>
+
+          <div className="projects">
+            {[1, 2, 3, 4].map((index) => {
+              return (
+                <div key={index} className="project-card placeholder"></div>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -188,42 +214,45 @@ const Dashboard = () => {
         </div>
         <div className="projects">
           {recentProjects.length > 0 ? (
-            recentProjects.map((project, index) => (
-              <div
-                key={index}
-                className="project-card"
-                onClick={() => handleProjectClick(project)}
-                style={{
-                  cursor: "pointer",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                <div className="project-image"></div>
-                <div className="project-description">
-                  <div className="project-header">
-                    {project.replace(".json", "")}
-                  </div>
-                  <div className="project-management">
-                    <div className="project-members">
-                    <div className="project-member">
-                      <img
-                        src={user ? user.picture : "/icons/ellipse.svg"}
-                        alt="Profile"
-                        className="account-icon"
-                      />
-                      <p className="username">{user.name}</p>
-                      </div>
+            recentProjects.map((project, index) => {
+              const [name, lastModified] = project;
+              return (
+                <div
+                  key={index}
+                  className="project-card"
+                  onClick={() => handleProjectClick(name)}
+                  style={{
+                    cursor: "pointer",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  <div className="project-image"></div>
+                  <div className="project-description">
+                    <div className="project-header">
+                      {name.replace(".json", "")}
                     </div>
-                    <div className="project-progress">
-                      <div className="progress-text">In Progress</div>
-                      <div className="progress-bar"></div>
+                    <div className="project-management">
+                      <div className="project-members">
+                        <div className="project-member">
+                          <img
+                            src={user ? user.picture : "/icons/ellipse.svg"}
+                            alt="Profile"
+                            className="account-icon"
+                          />
+                          <p className="username">{user.name}</p>
+                        </div>
+                      </div>
+                      <div className="project-progress">
+                        <div className="progress-text">In Progress</div>
+                        <div className="progress-bar"></div>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))
+              );
+            })
           ) : (
             <p>No recent projects</p>
           )}

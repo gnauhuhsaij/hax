@@ -1,5 +1,35 @@
 import boto3
 import json
+from sqlalchemy import create_engine
+
+def get_rds_secret(secret_name, region_name="us-east-1"):
+    """
+    Fetches the RDS secret from AWS Secrets Manager
+    """
+    client = boto3.client("secretsmanager", region_name=region_name)
+
+    response = client.get_secret_value(SecretId=secret_name)
+    
+    secret_string = response["SecretString"]
+    secret = json.loads(secret_string)
+
+    return secret
+
+def create_engine_from_secret(secret_name, region_name="us-east-1"):
+    secret = get_rds_secret(secret_name[0], region_name)
+    secret2 = get_rds_secret(secret_name[1], region_name)
+
+    username = secret["username"]
+    password = secret["password"]
+    endpoint = secret2["db-endpoint"]
+    port = secret2["db-port"]
+    dbname = secret2["dbname"]
+
+    url = f"postgresql://{username}:{password}@{endpoint}:{port}/{dbname}"
+    print(url)
+    engine = create_engine(url)
+
+    return engine
 
 def get_secret():
     secret_name = "doai/openai/1015"

@@ -1,13 +1,22 @@
 import asyncio
 import aiohttp
+from typing import TypedDict
+from langgraph.graph import StateGraph, START, END
+from langchain_openai import ChatOpenAI
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.runnables import RunnableLambda
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
-
+import os
+from services.task_utils import get_secret
 
 model = SentenceTransformer("all-MiniLM-L6-v2")  # Efficient embedding model
+api_key = get_secret()
+os.environ["OPENAI_API_KEY"] = api_key
 
 def get_subpages_from_homepage(url, max_links=10):
     """
@@ -91,7 +100,30 @@ def similarity_score(query, search):
 
     return similarity
 
-def call_google_search_api(query):
+class SearchState(TypedDict):
+    step_name: str
+    workflow_structure: str
+    query: str
+
+
+# --- Query Generation Chain ---
+llm = ChatOpenAI(model="gpt-4o", temperature=0.4)
+
+query_prompt = ChatPromptTemplate.from_messages([
+    ("system", "You are an expert researcher who crafts precise Google search queries."),
+    ("user", 
+     """Given the current workflow structure:
+{workflow_structure}
+
+And the current step:
+{step_name}
+
+Craft the best possible Google search query that would help someone find relevant information to complete the step in this workflow. Be specific, and assume the searcher is looking for practical resources or documentation. Reply with ONLY the query string.""")
+])
+
+query_chain = query_prompt | llm | StrOutputParser()
+
+def call_google_search_api(step, context):
     """
     Calls the Google Search API to retrieve search results and also includes the website favicon.
     Args:
@@ -99,6 +131,8 @@ def call_google_search_api(query):
     Returns:
         dict: A dictionary containing evidence or an error message, including favicons.
     """
+    query = get_query(step, context)[1:-1]
+    print(query)
     api_key = "AIzaSyDYO5BSod8opzI20moUfGLfcYO1ez1vMQU"
     search_engine_id = "c5297ee11db07449c"  # Replace with your custom search engine ID
     base_url = "https://www.googleapis.com/customsearch/v1"
@@ -121,11 +155,11 @@ def call_google_search_api(query):
             title = item.get("title")
             link = item.get("link")
             snippet = item.get("snippet")
-            favicon = get_favicon(link)
+            # favicon = get_favicon(link)
             score = similarity_score(query, title)
             all_items.append({
                 "title": title, "link": link, "snippet": snippet,
-                "favicon": favicon, "score": float(score[0][0])
+                "favicon": 0, "score": float(score[0][0])
             })
 
         # Step 2: Scrape subpages of top 3 items
@@ -149,3 +183,32 @@ def call_google_search_api(query):
 
     except requests.exceptions.RequestException as e:
         return {"success": False, "error": str(e)}
+
+def get_query(step, context):
+
+    def generate_query_node(state: SearchState) -> SearchState:
+        query = query_chain.invoke({
+            "workflow_structure": state["workflow_structure"],
+            "step_name": state["step_name"]
+        })
+        return {
+            "step_name": state["step_name"],
+            "workflow_structure": state["workflow_structure"],
+            "query": query
+        }
+
+    # Build the LangGraph
+    graph = StateGraph(SearchState)
+    graph.add_node("generate_query", RunnableLambda(generate_query_node))
+    graph.set_entry_point("generate_query")
+    graph.add_edge("generate_query", END)
+
+    app = graph.compile()
+
+    # --- Example Run ---
+    input_data = {
+        "step_name": step,
+        "workflow_structure": context,
+    }
+    result = app.invoke(input_data)
+    return result['query']

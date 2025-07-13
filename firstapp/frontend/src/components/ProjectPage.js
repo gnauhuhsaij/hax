@@ -5,10 +5,18 @@ import "../styles/ProjectPage.css"; // Adjust the path to the styles folder
 import { AuthContext } from "../contexts/AuthContext";
 import { motion } from "framer-motion";
 import CONFIG from "../config";
+import MemoryCanvas from "./MemoryCanvas"; // Adjust path as needed
 
 const ProjectPage = () => {
-  const { user, currentWorkflow, setCurrentWorkflow, currentWorkflowName, setWorkflowId, setCurrentWorkflowName } =
-    useContext(AuthContext); // Get user ID from AuthContext
+  const {
+    user,
+    currentWorkflow,
+    setCurrentWorkflow,
+    currentWorkflowName,
+    setWorkflowId,
+    workflowId,
+    setCurrentWorkflowName,
+  } = useContext(AuthContext); // Get user ID from AuthContext
   const [appId, setAppId] = useState(0);
   const [input, setInput] = useState("");
   const [workflow, setWorkflow] = useState(null);
@@ -34,6 +42,7 @@ const ProjectPage = () => {
   const [promptTags, setPromptTags] = useState([]);
   const [summaryMode, setSummaryMode] = useState(false);
   const [reviseMode, setReviseMode] = useState(false);
+  const [showMemoryCanvas, setShowMemoryCanvas] = useState(false);
 
   //渐进渐出
   useEffect(() => {
@@ -77,28 +86,28 @@ const ProjectPage = () => {
     if (currentWorkflow) {
       try {
         // If currentWorkflow is already an object, use it directly
-        if (typeof currentWorkflow === 'object') {
+        if (typeof currentWorkflow === "object") {
           setWorkflow(currentWorkflow);
         } else {
           // Try to parse it as JSON
           setWorkflow(JSON.parse(currentWorkflow));
         }
       } catch (error) {
-        console.error('Error parsing workflow:', error);
+        console.error("Error parsing workflow:", error);
         setWorkflow(null);
       }
     }
     if (currentWorkflowName) {
       try {
         // If currentWorkflowName is already a string, use it directly
-        if (typeof currentWorkflowName === 'string') {
+        if (typeof currentWorkflowName === "string") {
           setWorkflowName(currentWorkflowName);
         } else {
           // Try to parse it as JSON
           setWorkflowName(JSON.parse(currentWorkflowName));
         }
       } catch (error) {
-        console.error('Error parsing workflow name:', error);
+        console.error("Error parsing workflow name:", error);
         setWorkflowName(null);
       }
     }
@@ -127,16 +136,22 @@ const ProjectPage = () => {
     if (!user) return; // Ensure user is logged in
 
     try {
-      const response = await axios.post(`${CONFIG.BACKEND_URL}/api/upload_workflows`, {
-        user_id: user.id, // Unique Google user ID
-        workflow: workflowData,
-        workflowName: workflowName,
-        workflow_id: workflowId
-      });
+      const response = await axios.post(
+        `${CONFIG.BACKEND_URL}/api/upload_workflows`,
+        {
+          user_id: user.id, // Unique Google user ID
+          workflow: workflowData,
+          workflowName: workflowName,
+          workflow_id: workflowId,
+        }
+      );
       if (response.status === 200) {
         const returnedWorkflowId = response.data.workflow_id;
-        console.log("Workflow uploaded successfully with workflow_id:", returnedWorkflowId);
-  
+        console.log(
+          "Workflow uploaded successfully with workflow_id:",
+          returnedWorkflowId
+        );
+
         // Update the frontend with the returned ID if necessary
         if (!workflowId && returnedWorkflowId) {
           setWorkflowId(returnedWorkflowId);
@@ -240,7 +255,11 @@ const ProjectPage = () => {
       setWorkflowId(workflow_id); // Set workflow ID in context
 
       // Upload workflow with its ID
-      uploadWorkflowToS3(JSON.stringify(parsedWorkflow), workflow_name, workflow_id);
+      uploadWorkflowToS3(
+        JSON.stringify(parsedWorkflow),
+        workflow_name,
+        workflow_id
+      );
 
       // Save workflow and phase names to localStorage
       setCurrentWorkflow(JSON.stringify(parsedWorkflow));
@@ -451,9 +470,35 @@ const ProjectPage = () => {
         </div>
       ) : (
         <div>
-          <div className="workflow-name">{workflowName}</div>
+          <div className="workflow-name">
+            {workflowName}
+            <button
+              className="memory-toggle-button"
+              style={{
+                marginLeft: "0px",
+                padding: "8px 14px",
+                height: "40px",
+                width: "40px",
+                background: "transparent",
+                border: "1px solid gray",
+                borderRadius: "50%",
+                fontWeight: "bold",
+                cursor: "pointer",
+              }}
+              onClick={() => setShowMemoryCanvas(true)}
+            >
+              🧠
+            </button>
+          </div>
           <Workflow workflow={workflow} workflowName={workflowName} />
         </div>
+      )}
+      {showMemoryCanvas && (
+        <MemoryCanvas
+          onClose={() => setShowMemoryCanvas(false)}
+          userId={user?.id}
+          workflowId={workflowId}
+        />
       )}
     </div>
   );

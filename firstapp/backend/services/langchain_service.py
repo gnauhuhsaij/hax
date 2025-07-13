@@ -147,6 +147,12 @@ simplify_model_prompt = """
     This is the provided sentence:
     {subtask_descriptions}
 """
+simplify_model_prompt = """
+    Your task is to copy and paste the provided sentence exactly:
+    
+    This is the provided sentence:
+    {subtask_descriptions}
+"""
 simplify_model_prompt_template = ChatPromptTemplate.from_messages(
     [("user", simplify_model_prompt)]
 )

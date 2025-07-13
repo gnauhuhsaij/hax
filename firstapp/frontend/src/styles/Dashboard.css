@@ -22,7 +22,7 @@ a {
   margin-top: 5vh;
   margin-left: calc(50% - 50vh);
   margin-left: 5%;
-  gap: 4%; /* Add spacing between elements */
+  gap: 4vh; /* Add spacing between elements */
   opacity: 0;
   transition: opacity 0.5s ease-in-out;
 }
@@ -36,12 +36,12 @@ a {
 }
 
 .announcements {
-  height: 12%;
+  height: 12vh;
   background: transparent;
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 20%;
+  gap: 2.4vh;
 }
 
 .ADescription {
@@ -76,16 +76,16 @@ a {
 }
 
 .quickStart {
-  height: 20%;
+  height: 20vh;
   background: transparent;
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 8%;
+  gap: 1.6vh;
 }
 
 .QSDescription {
-  height: 20%;
+  height: 4vh;
   background: transparent;
   font-family: "Inter", sans-serif;
   color: #000;
@@ -97,7 +97,7 @@ a {
 }
 
 .QSSection {
-  height: 72%;
+  height: 14.4vh;
   display: inline-flex;
   padding: 16px 0px 16px 12px;
   justify-content: flex-end;
@@ -362,9 +362,9 @@ a {
   background: var(--trans, rgba(173, 173, 173, 0.2));
 }
 
-.project-header.placeholder {
+.project-card.placeholder {
   background-color: var(--trans, rgba(173, 173, 173, 0.2));
-  border-radius: 15px;
+  border: transparent;
 }
 
 .project-image {

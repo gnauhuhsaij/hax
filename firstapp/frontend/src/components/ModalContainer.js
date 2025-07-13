@@ -7,6 +7,8 @@ import { AuthContext } from "../contexts/AuthContext";
 const ModalContainer = ({
   isLoading,
   step,
+  subtaskIndex,
+  stepIndex,
   context,
   evidence,
   classification,
@@ -25,6 +27,22 @@ const ModalContainer = ({
   const [responses, setResponses] = useState({});
   const [fetchLoading, setFetchLoading] = useState(Array(10).fill(false));
   const [memoryStatus, setMemoryStatus] = useState({});
+  const [endChat, setEndChat] = useState(false);
+
+  useEffect(() => {
+    // Reset all stateful data when subtask/step changes
+    setResponses({});
+    setFetchLoading(Array(10).fill(false));
+    setMemoryStatus({});
+    setEndChat(false);
+    setAppId(null);
+    setChatHistory([
+      {
+        sender: "agent",
+        text: "Initializing chat... Please wait.",
+      },
+    ]);
+  }, [subtaskIndex, stepIndex]);
 
   const fetchEvidence = async (link, index) => {
     setFetchLoading((prev) => {
@@ -119,17 +137,16 @@ const ModalContainer = ({
   // }, [classification, isLoading, evidence]);
 
   useEffect(() => {
-    sendMessage(); // Call sendMessage immediately after component mounts
-  }, []); // Empty dependency array ensures it runs only once
+    if (classification === "Gather information from user") {
+      sendMessage(); // Only send message if classification matches
+    }
+  }, [classification]); // Empty dependency array ensures it runs only once
 
   const handleUserInput = async () => {
     if (!userInput.trim()) return;
 
-    // Add user message to chat history
     const userMessage = { sender: "user", text: userInput };
     setChatHistory((prev) => [...prev, userMessage]);
-
-    // Clear the input box
     setUserInput("");
 
     try {
@@ -140,16 +157,67 @@ const ModalContainer = ({
 
       if (response.status === 200) {
         const { responses } = response.data;
+
+        let endDetected = false;
+        let cleanText = responses;
+
+        if (responses.trim().endsWith("[END]")) {
+          endDetected = true;
+          cleanText = responses.trim().slice(0, -5).trim(); // remove "[END]"
+        }
+
         const agentMessage = {
           sender: "agent",
-          text: responses, // Adjust based on actual response format
+          text: cleanText,
         };
+
         setChatHistory((prev) => [...prev, agentMessage]);
+
+        if (endDetected) {
+          setEndChat(true);
+        }
       } else {
         console.error("Failed to send message:", response.data.error);
       }
     } catch (error) {
       console.error("Error in chat communication:", error);
+    }
+  };
+
+  const addEvidenceToMemory = async (evidenceText, uniqueKey) => {
+    console.log(subtaskIndex, stepIndex, step.name);
+    console.log("Adding Evidence to memory:", {
+      evidence: evidenceText,
+      userId: user?.id,
+      workflowId: workflowId,
+    });
+
+    if (!user?.id || !workflowId) {
+      console.warn("Missing user ID or workflow ID");
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        `${CONFIG.BACKEND_URL}/api/add_evidence`,
+        {
+          evidence: evidenceText,
+          userid: user.id,
+          workflowid: workflowId,
+          subtask_index: subtaskIndex,
+          step_index: subtaskIndex,
+          query_name: step.name,
+        }
+      );
+
+      if (response.status === 200) {
+        setMemoryStatus((prev) => ({ ...prev, [uniqueKey]: true }));
+      } else {
+        alert("Failed to add evidence to memory.");
+      }
+    } catch (error) {
+      console.error("Add to memory failed:", error);
+      alert("Error while adding to memory.");
     }
   };
 
@@ -163,29 +231,67 @@ const ModalContainer = ({
       >
         <div className="chat-container">
           <div className="chat-history">
-            {chatHistory.map((message, index) => (
-              <div
-                key={index}
-                className={`chat-message ${
-                  message.sender === "user" ? "user-message" : "agent-message"
-                }`}
-              >
-                {message.sender === "agent" && (
-                  <img
-                    src="icons/hax.png"
-                    alt="hax"
-                    className="icon-circle agent-icon"
-                  ></img>
-                )}
+            {chatHistory.map((message, index) => {
+              const isLastMessage = index === chatHistory.length - 1;
+              const isAgent = message.sender === "agent";
+              const memoryKey = `${index}-0`; // assuming 1 message per agent block
+
+              return (
                 <div
-                  className={`message-text ${
-                    message.sender === "user" ? "user" : "agent"
+                  key={index}
+                  className={`chat-message ${
+                    message.sender === "user" ? "user-message" : "agent-message"
                   }`}
                 >
-                  {message.text}
+                  {isAgent && (
+                    <img
+                      src="icons/hax.png"
+                      alt="hax"
+                      className="icon-circle agent-icon"
+                    />
+                  )}
+                  <div
+                    className={`message-text ${
+                      message.sender === "user" ? "user" : "agent"
+                    }`}
+                  >
+                    {message.text}
+
+                    {/* Inject the Add-to-Memory button if this is the last agent message and endChat is true */}
+                    {isLastMessage && isAgent && endChat && (
+                      <img
+                        src={
+                          memoryStatus[memoryKey]
+                            ? "icons/added_evidence.png"
+                            : "icons/add_evidence.png"
+                        }
+                        alt="Add to Memory"
+                        title={
+                          memoryStatus[memoryKey]
+                            ? "Already Added to Memory"
+                            : "Add to Memory"
+                        }
+                        onClick={() => {
+                          if (!memoryStatus[memoryKey]) {
+                            addEvidenceToMemory(message.text, memoryKey);
+                          }
+                        }}
+                        style={{
+                          marginLeft: "10px",
+                          cursor: memoryStatus[memoryKey]
+                            ? "default"
+                            : "pointer",
+                          height: "20px",
+                          width: "20px",
+                          opacity: memoryStatus[memoryKey] ? 0.5 : 1,
+                          flexShrink: 0,
+                        }}
+                      />
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
           <div className="chat-input">
             <input
@@ -209,6 +315,7 @@ const ModalContainer = ({
   }
 
   if (classification !== "Gather information from external sources") {
+    console.log(evidence);
     return (
       <div
         className="modal-container"
@@ -217,8 +324,9 @@ const ModalContainer = ({
         }}
       >
         <div className="placeholder-content">
-          <h2>Coming Soon</h2>
-          <p>Details for classification: {classification}</p>
+          {/* <h2>Coming Soon</h2>
+          <p>Details for classif\\ication: {classification}</p> */}
+          <h2>{evidence[0]?.snippet}</h2>
         </div>
       </div>
     );
@@ -234,39 +342,6 @@ const ModalContainer = ({
 
   const closeModal = () => {
     setIsModalOpen(false);
-  };
-
-  const addEvidenceToMemory = async (evidenceText, uniqueKey) => {
-    console.log("Adding Evidence to memory:", {
-      evidence: evidenceText,
-      userId: user?.id,
-      workflowId: workflowId,
-    });
-
-    if (!user?.id || !workflowId) {
-      console.warn("Missing user ID or workflow ID");
-      return;
-    }
-
-    try {
-      const response = await axios.post(
-        `${CONFIG.BACKEND_URL}/api/add_evidence`,
-        {
-          evidence: evidenceText,
-          userid: user.id,
-          workflowid: workflowId,
-        }
-      );
-
-      if (response.status === 200) {
-        setMemoryStatus((prev) => ({ ...prev, [uniqueKey]: true }));
-      } else {
-        alert("Failed to add evidence to memory.");
-      }
-    } catch (error) {
-      console.error("Add to memory failed:", error);
-      alert("Error while adding to memory.");
-    }
   };
 
   // Content for "Gather information from external sources"
@@ -331,7 +406,9 @@ const ModalContainer = ({
                           rel="noopener noreferrer"
                           tabIndex={-1}
                         >
-                          {new URL(item.link).hostname}
+                          {item.link && item.link.startsWith("http")
+                            ? new URL(item.link).hostname
+                            : "Invalid Link"}
                         </a>
                       </div>
                     </div>
