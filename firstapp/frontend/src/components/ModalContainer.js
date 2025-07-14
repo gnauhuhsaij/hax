@@ -192,20 +192,18 @@ const ModalContainer = ({
       workflowId: workflowId,
     });
 
-    if (!user?.id || !workflowId) {
-      console.warn("Missing user ID or workflow ID");
-      return;
-    }
+    const fallbackUserId = user?.id || `guest-${Date.now()}`;
+    const fallbackWorkflowId = workflowId || `workflow-${Date.now()}`;
 
     try {
       const response = await axios.post(
         `${CONFIG.BACKEND_URL}/api/add_evidence`,
         {
           evidence: evidenceText,
-          userid: user.id,
-          workflowid: workflowId,
+          userid: fallbackUserId,
+          workflowid: fallbackWorkflowId,
           subtask_index: subtaskIndex,
-          step_index: subtaskIndex,
+          step_index: stepIndex,
           query_name: step.name,
         }
       );

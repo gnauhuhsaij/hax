@@ -3,7 +3,7 @@ import "../styles//MemoryCanvas.css";
 import axios from "axios";
 import CONFIG from "../config"; // Ensure this has BACKEND_URL
 
-const MemoryCanvas = ({ onClose, userId, workflowId }) => {
+const MemoryCanvas = ({ onClose, userId, workflowId, workflow }) => {
   const [memories, setMemories] = useState([]);
 
   const fetchMemories = async () => {
@@ -22,7 +22,10 @@ const MemoryCanvas = ({ onClose, userId, workflowId }) => {
       console.error("Error fetching memories:", error);
     }
   };
-
+ 
+  useEffect(() => {
+    console.log(workflow[0]);
+  })
   useEffect(() => {
     fetchMemories();
   }, [userId, workflowId]);
@@ -80,9 +83,7 @@ const MemoryCanvas = ({ onClose, userId, workflowId }) => {
                 <p>{memory.content}...</p>
               </div>
               <div className="memory-card-footer">
-                <p>{memory.subtask_index}</p>
-                <p>{memory.step_index}</p>
-                <p>{memory.step_index}</p>
+                {workflow[0].steps[0].name}
                 <div className="memory-card-actions">
                   <button
                     className="memory-card-delete-button"

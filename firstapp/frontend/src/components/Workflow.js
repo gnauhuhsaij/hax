@@ -79,7 +79,11 @@ const Workflow = ({ workflow, workflowName }) => {
   }));
 
   const callApiForEvidence = async (name, step) => {
+    const fallbackUserId = user?.id || `guest-${Date.now()}`;
+    const fallbackWorkflowId = workflowId || `workflow-${Date.now()}`;
+    console.log(fallbackUserId, fallbackWorkflowId);
     try {
+      console.log(1);
       // Step 1: If execution type is "LLM", use the RAG endpoint
       if (step === "LLM") {
         console.log(step);
@@ -87,15 +91,14 @@ const Workflow = ({ workflow, workflowName }) => {
           `${CONFIG.BACKEND_URL}/api/rag_answer`,
           {
             query: name,
-            userid: user.id, // make sure these fields exist in your step object
-            workflowid: workflowId,
+            userid: fallbackUserId, // make sure these fields exist in your step object
+            workflowid: fallbackWorkflowId,
           }
         );
 
         const answer = ragResponse.data?.answer || "No answer found.";
 
         // You can shape the return however you want
-        console.log(answer);
         return [
           {
             title: "LLM Response",
@@ -137,7 +140,25 @@ const Workflow = ({ workflow, workflowName }) => {
             },
           ];
     } catch (error) {
-      console.error("Error calling API:", error);
+      console.log("Step value and type:", step, typeof step);
+    
+      if (error.response) {
+        // The request was made and the server responded with a status code outside of 2xx
+        console.error("API Response Error:", {
+          status: error.response.status,
+          data: error.response.data,
+          headers: error.response.headers,
+        });
+      } else if (error.request) {
+        // The request was made but no response was received
+        console.error("API No Response Error:", error.request);
+      } else {
+        // Something happened in setting up the request
+        console.error("API Setup Error:", error.message);
+      }
+    
+      console.error("Full Error Object:", error);
+    
       return [
         {
           title: "Error retrieving evidence.",
@@ -158,7 +179,7 @@ const Workflow = ({ workflow, workflowName }) => {
   ) => {
     const evidenceKey = `${phaseIndex}-${subtaskIndex}-${stepIndex}`;
     // console.log(modalCache);
-
+    console.log(step);
     if (modalCache[evidenceKey]) {
       setModalContent(modalCache[evidenceKey]);
       return;

@@ -219,7 +219,7 @@ const ProjectPage = () => {
   };
 
   const send2Process = async () => {
-    if (!input.trim()) return; // Prevent empty input submission
+    if (!centerMessage.trim()) return; // Prevent empty input submission
     setLoading(true); // Start loading
     try {
       const response2 = await axios.post(
@@ -498,6 +498,7 @@ const ProjectPage = () => {
           onClose={() => setShowMemoryCanvas(false)}
           userId={user?.id}
           workflowId={workflowId}
+          workflow={workflow}
         />
       )}
     </div>
