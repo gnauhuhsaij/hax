@@ -1,5 +1,5 @@
 # models.py
-from sqlalchemy import Column, String, Text, DateTime, Integer
+from sqlalchemy import Column, String, Text, DateTime, Integer, Boolean
 from db import Base
 from datetime import datetime
 
@@ -15,3 +15,6 @@ class Evidence(Base):
     subtask_index = Column(Integer, nullable=True)       # Index of the subtask
     step_index = Column(Integer, nullable=True)          # Index of the step within the subtask
     query_name = Column(String, nullable=True)           # Optional descriptive query name
+    issynthesis = Column(Boolean, nullable=True)
+    source = Column(String, nullable=True)
+    summary = Column(String, nullable=True)

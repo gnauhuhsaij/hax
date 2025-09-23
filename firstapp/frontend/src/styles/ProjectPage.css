@@ -2,7 +2,7 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: "Noto Sans", sans-serif; /* Set Noto Sans as the default font */
+  font-family: "Inter", sans-serif; /* Set Inter as the default font */
 }
 
 /* styles.css */
@@ -83,7 +83,7 @@ body {
 .center-message p {
   color: #000;
   text-align: center;
-  font-family: "Noto Sans";
+  font-family: "Inter";
   font-size: 40px;
   font-style: normal;
   font-weight: 200;
@@ -118,7 +118,7 @@ body {
   background: transparent;
   color: #000;
   text-align: center;
-  font-family: "Noto Sans";
+  font-family: "Inter";
   font-size: 32px;
   font-style: normal;
   font-weight: 300;
@@ -131,7 +131,7 @@ body {
   width: 30%;
   color: #000;
   text-align: center;
-  font-family: "Noto Sans";
+  font-family: "Inter";
   font-size: 20px;
   font-style: normal;
   font-weight: 400;
@@ -161,7 +161,7 @@ body {
 .generate p {
   color: #fff;
   text-align: center;
-  font-family: "Noto Sans";
+  font-family: "Inter";
   font-size: 20px;
   font-style: normal;
   font-weight: 600;
@@ -173,7 +173,7 @@ body {
   font-size: 36px;
   font-weight: 300;
   color: #000;
-  font-family: "Noto Sans";
+  font-family: "Inter";
   font-style: normal;
   line-height: 150%; /* 54px */
   letter-spacing: -0.684px;
@@ -192,20 +192,20 @@ body {
 }
 
 .workflow-name {
-  position: relative;
+  position: fixed;
   display: flex;
   flex-direction: row;
   gap: 20px;
   width: 100%;
-  height: 100px;
+  height: 10vh;
   /* transform: translate(-50%, -50%); */
 
-  background: transparent;
+  background: white;
   justify-content: center;
   align-items: center;
-  z-index: 9;
+  z-index: 11;
 
-  font-family: "Noto Sans";
+  font-family: "Inter";
   font-size: 20px;
   font-style: normal;
   font-weight: 600;

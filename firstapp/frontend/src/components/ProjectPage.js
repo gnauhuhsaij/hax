@@ -16,6 +16,8 @@ const ProjectPage = () => {
     setWorkflowId,
     workflowId,
     setCurrentWorkflowName,
+    registerWorkflowUploader,
+    setModalCacheData,
   } = useContext(AuthContext); // Get user ID from AuthContext
   const [appId, setAppId] = useState(0);
   const [input, setInput] = useState("");
@@ -43,13 +45,36 @@ const ProjectPage = () => {
   const [summaryMode, setSummaryMode] = useState(false);
   const [reviseMode, setReviseMode] = useState(false);
   const [showMemoryCanvas, setShowMemoryCanvas] = useState(false);
+  const [pendingSource, setPendingSource] = useState(null); // item fetched for B
+
+  useEffect(() => {
+    console.log("workflow updated and will render:", workflow);
+
+    if (Array.isArray(workflow)) {
+      workflow.forEach((subtask, sI) => {
+        if (Array.isArray(subtask.steps)) {
+          console.log(
+            `[Check] subtask[${sI}].steps is iterable`,
+            subtask.steps
+          );
+        } else {
+          console.warn(
+            `[Check] subtask[${sI}].steps is NOT iterable`,
+            subtask.steps
+          );
+        }
+      });
+    } else {
+      console.warn("[Check] workflow is not an array:", workflow);
+    }
+  }, [workflow]);
 
   //渐进渐出
   useEffect(() => {
     setTimeout(() => {
       setIsVisible(true);
     }, 100); // Small delay before fade-in
-  }, []);
+  }, [workflow]);
 
   // Summary Mode
   useEffect(() => {
@@ -86,6 +111,7 @@ const ProjectPage = () => {
     if (currentWorkflow) {
       try {
         // If currentWorkflow is already an object, use it directly
+        console.log(currentWorkflow);
         if (typeof currentWorkflow === "object") {
           setWorkflow(currentWorkflow);
         } else {
@@ -161,6 +187,32 @@ const ProjectPage = () => {
       console.error("Error uploading workflow to S3:", error);
     }
   };
+
+  const handleOpenFromModal = async (source) => {
+    try {
+      const response = await axios.get(
+        `${CONFIG.BACKEND_URL}/api/show_website_memory`,
+        {
+          params: { user_id: user?.id, workflow_id: workflowId, url: source },
+        }
+      );
+
+      const item = response.data; // fetched source item
+      setPendingSource(item); // 2. Pass this to B
+    } catch (err) {
+      console.error("Failed to fetch source", err);
+    }
+  };
+
+  useEffect(() => {
+    if (pendingSource !== null) {
+      setShowMemoryCanvas(true);
+    }
+  }, [pendingSource]);
+
+  useEffect(() => {
+    registerWorkflowUploader(uploadWorkflowToS3);
+  }, [registerWorkflowUploader]);
 
   const handleSubmit = async () => {
     if (!input.trim()) return; // Prevent empty input submission
@@ -245,6 +297,8 @@ const ProjectPage = () => {
             name: step.name,
             classification: step.classification,
             execution: step.execution,
+            dependence: step.dependence,
+            status: "Not Started",
           })),
           phase: details.phase,
         })
@@ -264,6 +318,7 @@ const ProjectPage = () => {
       // Save workflow and phase names to localStorage
       setCurrentWorkflow(JSON.stringify(parsedWorkflow));
       setCurrentWorkflowName(workflow_name);
+      setModalCacheData({});
     } catch (error) {
       console.error("Error during submission:", error);
     } finally {
@@ -490,15 +545,23 @@ const ProjectPage = () => {
               🧠
             </button>
           </div>
-          <Workflow workflow={workflow} workflowName={workflowName} />
+          <Workflow
+            workflow={workflow}
+            workflowName={workflowName}
+            handleOpenFromModal={handleOpenFromModal}
+          />
         </div>
       )}
       {showMemoryCanvas && (
         <MemoryCanvas
-          onClose={() => setShowMemoryCanvas(false)}
+          onClose={() => {
+            setShowMemoryCanvas(false);
+            setPendingSource(null);
+          }}
           userId={user?.id}
           workflowId={workflowId}
           workflow={workflow}
+          externalOpenSource={pendingSource}
         />
       )}
     </div>

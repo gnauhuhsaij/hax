@@ -13,6 +13,8 @@ from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 import os
 from services.task_utils import get_secret
+from serpapi import GoogleSearch
+
 
 model = SentenceTransformer("all-MiniLM-L6-v2")  # Efficient embedding model
 api_key = get_secret()
@@ -112,13 +114,13 @@ llm = ChatOpenAI(model="gpt-4o", temperature=0.4)
 query_prompt = ChatPromptTemplate.from_messages([
     ("system", "You are an expert researcher who crafts precise Google search queries."),
     ("user", 
-     """Given the current workflow structure:
-{workflow_structure}
-
-And the current step:
-{step_name}
-
-Craft the best possible Google search query that would help someone find relevant information to complete the step in this workflow. Be specific, and assume the searcher is looking for practical resources or documentation. Reply with ONLY the query string.""")
+     """Craft the best possible Google search query that would help someone find relevant information to complete one step in this workflow. Be specific, and assume the searcher is looking for practical resources or documentation.
+     The step needs to be completed is: {step_name}
+     Make sure the query you generate would best collect evidence for this step.
+     To help you grasp the full picture, the entire workflow context is:
+    {workflow_structure}
+    Reply ONLY with the query.
+""")
 ])
 
 query_chain = query_prompt | llm | StrOutputParser()
@@ -133,53 +135,65 @@ def call_google_search_api(step, context):
     """
     query = get_query(step, context)[1:-1]
     print(query)
-    api_key = "AIzaSyDYO5BSod8opzI20moUfGLfcYO1ez1vMQU"
-    search_engine_id = "c5297ee11db07449c"  # Replace with your custom search engine ID
-    base_url = "https://www.googleapis.com/customsearch/v1"
-
-    params = {"key": api_key, "cx": search_engine_id, "q": query}
-
+    all_items = []
+    api_key = "9493f1e5d09ada3f16d399bd07716f0bcef22c9a327220ea1f2b128957b17593"
     try:
-        response = requests.get(base_url, params=params)
-        response.raise_for_status()
-        data = response.json()
+        for i in [0, 10, 20]:
+            params = {
+                "q": query,
+                "location": "Austin, Texas, United States",
+                "hl": "en",
+                "gl": "us",
+                "google_domain": "google.com",
+                "api_key": api_key,
+                "start": str(i)
+            }
 
-        if "items" not in data:
-            return {"success": False, "error": "No results found."}
+            search = GoogleSearch(params)
+            results = search.get_dict()
 
-        results = []
-        all_items = []
+            # Step 1: Process top search results
+            for item in results['organic_results']:
+                title = item.get("title")
+                link = item.get("link")
+                snippet = item.get("snippet")
+                favicon = item.get("favicon")
+                # score = similarity_score(query, title)
+                all_items.append({
+                    "title": title, "link": link, "snippet": snippet, "favicon": favicon
+                })
+        return {"success": True, "evidence": all_items[0:15]}
+    # api_key = "AIzaSyDYO5BSod8opzI20moUfGLfcYO1ez1vMQU"
+    # search_engine_id = "c5297ee11db07449c"  # Replace with your custom search engine ID
+    # base_url = "https://www.googleapis.com/customsearch/v1"
 
-        # Step 1: Process top search results
-        for item in data["items"]:
-            title = item.get("title")
-            link = item.get("link")
-            snippet = item.get("snippet")
-            # favicon = get_favicon(link)
-            score = similarity_score(query, title)
-            all_items.append({
-                "title": title, "link": link, "snippet": snippet,
-                "favicon": 0, "score": float(score[0][0])
-            })
+    # params = {"key": api_key, "cx": search_engine_id, "q": query}
 
-        # Step 2: Scrape subpages of top 3 items
-        # for top_result in all_items[:3]:
-        #     subpages = get_subpages_from_homepage(top_result["link"], max_links=10)
-        #     print(subpages)
-        #     for subpage in subpages:
-        #         sub_favicon = get_favicon(subpage)
-        #         sub_score = similarity_score(query, subpage)
-        #         all_items.append({
-        #             "title": subpage,  # No title, so using URL
-        #             "link": subpage,
-        #             "snippet": "Subpage of " + top_result["link"],
-        #             "favicon": sub_favicon,
-        #             "score": float(sub_score[0][0])
-        #         })
+    # try:
+    #     response = requests.get(base_url, params=params)
+    #     response.raise_for_status()
+    #     data = response.json()
 
-        # Step 3: Sort and return top 5
-        top_results = sorted(all_items, key=lambda x: x["score"], reverse=True)[:8]
-        return {"success": True, "evidence": top_results}
+    #     if "items" not in data:
+    #         return {"success": False, "error": "No results found."}
+
+    #     results = []
+    #     all_items = []
+
+    #     # Step 1: Process top search results
+    #     for item in data["items"]:
+    #         title = item.get("title")
+    #         link = item.get("link")
+    #         snippet = item.get("snippet")
+    #         # favicon = get_favicon(link)
+    #         score = similarity_score(query, title)
+    #         all_items.append({
+    #             "title": title, "link": link, "snippet": snippet,
+    #             "favicon": 0, "score": float(score[0][0])
+    #         })
+    #     # Step 3: Sort and return top 5
+    #     top_results = sorted(all_items, key=lambda x: x["score"], reverse=True)[:8]
+    #     return {"success": True, "evidence": top_results}
 
     except requests.exceptions.RequestException as e:
         return {"success": False, "error": str(e)}

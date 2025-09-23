@@ -6,13 +6,24 @@ import "../styles/Workflow.css";
 import { AuthContext } from "../contexts/AuthContext";
 import CONFIG from "../config";
 
-const Workflow = ({ workflow, workflowName }) => {
-  const groupedByPhase = workflow.reduce((acc, subtask) => {
+const Workflow = ({ workflow, workflowName, handleOpenFromModal }) => {
+  useEffect(() => {
+    console.log(workflow);
+  });
+  const groupedByPhase = Object.values(workflow).reduce((acc, subtask) => {
     acc[subtask.phase] = acc[subtask.phase] || [];
     acc[subtask.phase].push(subtask);
     return acc;
   }, {});
-  const { user, workflowId } = useContext(AuthContext);
+  const {
+    user,
+    workflowId,
+    currentWorkflow,
+    currentWorkflowName,
+    modalCacheData,
+    setModalCacheData,
+    saveModalCacheDebounced,
+  } = useContext(AuthContext);
   // const [expandedSubtasks, setExpandedSubtasks] = useState({});
   const [evidence, setEvidence] = useState({}); // Store evidence for each step
   const [loadingEvidence, setLoadingEvidence] = useState({});
@@ -33,6 +44,24 @@ const Workflow = ({ workflow, workflowName }) => {
   //     [index]: !prev[index],
   //   }));
   // };
+  useEffect(() => {
+    if (!currentWorkflow) return;
+    console.log(modalCacheData);
+    const wfObj =
+      typeof currentWorkflow === "string"
+        ? JSON.parse(currentWorkflow)
+        : currentWorkflow;
+
+    const savedData = modalCacheData || {};
+    if (Object.keys(savedData).length) {
+      // store serializable cache into context
+      setModalCacheData(savedData);
+
+      // optionally build initial JSX cache lazily; here we keep it empty
+      // and will reconstruct modals on demand from savedData.
+    }
+  }, [currentWorkflow, setModalCacheData]);
+
   useEffect(() => {
     if (skipHandleRoleClickRef.current) {
       skipHandleRoleClickRef.current = false; // reset after skipping
@@ -61,7 +90,7 @@ const Workflow = ({ workflow, workflowName }) => {
   useEffect(() => {
     const workflowStructure = [`${workflowName}`];
 
-    workflow.forEach((subtask) => {
+    Object.values(workflow).forEach((subtask) => {
       workflowStructure.push(`> ${subtask.description}`);
       subtask.steps.forEach((step) => {
         workflowStructure.push(`>> ${step.name}`);
@@ -72,11 +101,70 @@ const Workflow = ({ workflow, workflowName }) => {
     // console.log(formattedStructure);
   }, [workflow, workflowName]);
 
-  const allSubtasks = workflow.flatMap((subtask, index) => ({
+  const allSubtasks = Object.values(workflow).flatMap((subtask, index) => ({
     ...subtask,
-    phaseIndex: workflow.findIndex((w) => w.phase === subtask.phase),
+    phaseIndex: Object.values(workflow).findIndex(
+      (w) => w.phase === subtask.phase
+    ),
     subtaskIndex: index,
   }));
+  const markFetched = (index, evidenceKey) => {
+    setEvidence((prev) =>
+      Object.values(prev).map((item, i) =>
+        i === index ? { ...item, fetched: true } : item
+      )
+    );
+    console.log(evidenceKey);
+
+    setModalCacheData((prev) => ({
+      ...prev,
+      [evidenceKey]: {
+        ...prev[evidenceKey],
+        evidence: prev[evidenceKey].evidence.map((item, i) =>
+          i === index ? { ...item, fetched: true } : item
+        ),
+      },
+    }));
+  };
+
+  const markEvidenceField = (evidenceKey, index, updates) => {
+    // 1) Update evidence state
+    setEvidence((prev) => {
+      const prevArray = prev[evidenceKey] || [];
+      const updatedArray = prevArray.map((item, i) =>
+        i === index ? { ...item, ...updates } : item
+      );
+      return {
+        ...prev,
+        [evidenceKey]: updatedArray,
+      };
+    });
+
+    // 2) Update modalCacheData
+    setModalCacheData((prev) => {
+      const prevEntry = prev[evidenceKey] || {};
+      const prevEv = prevEntry.evidence || [];
+      const updatedEv = prevEv.map((item, i) =>
+        i === index ? { ...item, ...updates } : item
+      );
+
+      const next = {
+        ...prev,
+        [evidenceKey]: {
+          ...prevEntry,
+          evidence: updatedEv,
+        },
+      };
+
+      // ✅ Trigger upload via debouncer
+      saveModalCacheDebounced(600, next);
+      return next;
+    });
+  };
+
+  useEffect(() => {
+    saveModalCacheDebounced(600, modalCacheData);
+  }, [modalCacheData, currentWorkflow]);
 
   const callApiForEvidence = async (name, step) => {
     const fallbackUserId = user?.id || `guest-${Date.now()}`;
@@ -105,6 +193,7 @@ const Workflow = ({ workflow, workflowName }) => {
             link: "",
             snippet: answer,
             rag_response: answer,
+            favicon: "",
           },
         ];
       }
@@ -126,9 +215,11 @@ const Workflow = ({ workflow, workflowName }) => {
         link: item?.link,
         snippet: item?.snippet,
         score: item?.score,
+        favicon: item?.favicon,
         rag_response: null, // optional placeholder
+        fetched: false,
       }));
-
+      console.log(evidence);
       return evidence.length > 0
         ? evidence
         : [
@@ -141,7 +232,7 @@ const Workflow = ({ workflow, workflowName }) => {
           ];
     } catch (error) {
       console.log("Step value and type:", step, typeof step);
-    
+
       if (error.response) {
         // The request was made and the server responded with a status code outside of 2xx
         console.error("API Response Error:", {
@@ -156,9 +247,9 @@ const Workflow = ({ workflow, workflowName }) => {
         // Something happened in setting up the request
         console.error("API Setup Error:", error.message);
       }
-    
+
       console.error("Full Error Object:", error);
-    
+
       return [
         {
           title: "Error retrieving evidence.",
@@ -178,80 +269,172 @@ const Workflow = ({ workflow, workflowName }) => {
     subtask
   ) => {
     const evidenceKey = `${phaseIndex}-${subtaskIndex}-${stepIndex}`;
-    // console.log(modalCache);
-    console.log(step);
+    console.log(modalCacheData);
+
+    // If we already built the JSX modal in-memory, use it immediately
     if (modalCache[evidenceKey]) {
-      setModalContent(modalCache[evidenceKey]);
+      const m = (
+        <ModalContainer
+          key={`${modalCacheData[evidenceKey].phaseIndex}-${modalCacheData[evidenceKey].subtaskIndex}-${modalCacheData[evidenceKey].stepIndex}`}
+          isLoading={false}
+          step={modalCacheData[evidenceKey].step}
+          phaseIndex={modalCacheData[evidenceKey].phaseIndex}
+          subtaskIndex={modalCacheData[evidenceKey].subtaskIndex}
+          stepIndex={modalCacheData[evidenceKey].stepIndex}
+          context={modalCacheData[evidenceKey].context}
+          evidence={modalCacheData[evidenceKey].evidence}
+          classification={modalCacheData[evidenceKey].classification}
+          markFetched={markFetched}
+          markEvidenceField={markEvidenceField}
+          hasSummary={modalCacheData[evidenceKey].hasSummary}
+          summaryContent={modalCacheData[evidenceKey].summaryContent}
+          handleOpenFromModal={handleOpenFromModal}
+        />
+      );
+      setModalContent(m);
+      console.log(modalCacheData[evidenceKey].summaryContent, evidenceKey);
       return;
     }
-    // Show loading modal
+
+    // If we have serializable data saved earlier, rehydrate JSX quickly
+    if (modalCacheData[evidenceKey]) {
+      const m = (
+        <ModalContainer
+          key={`${modalCacheData[evidenceKey].phaseIndex}-${modalCacheData[evidenceKey].subtaskIndex}-${modalCacheData[evidenceKey].stepIndex}`}
+          isLoading={false}
+          step={modalCacheData[evidenceKey].step}
+          phaseIndex={modalCacheData[evidenceKey].phaseIndex}
+          subtaskIndex={modalCacheData[evidenceKey].subtaskIndex}
+          stepIndex={modalCacheData[evidenceKey].stepIndex}
+          context={modalCacheData[evidenceKey].context}
+          evidence={modalCacheData[evidenceKey].evidence}
+          classification={modalCacheData[evidenceKey].classification}
+          markFetched={markFetched}
+          markEvidenceField={markEvidenceField}
+          hasSummary={modalCacheData[evidenceKey].hasSummary}
+          summaryContent={modalCacheData[evidenceKey].summaryContent}
+          handleOpenFromModal={handleOpenFromModal}
+        />
+      );
+      console.log(2);
+      setModalCache((prev) => ({ ...prev, [evidenceKey]: m }));
+      setModalContent(m);
+      return;
+    }
+
+    // Otherwise, show loading then fetch
     setModalContent(
       <ModalContainer
+        key={`${phaseIndex}-${subtaskIndex}-${stepIndex}`}
         isLoading={true}
         step={step}
+        phaseIndex={phaseIndex}
         subtaskIndex={subtaskIndex}
         stepIndex={stepIndex}
         context={[]}
         evidence={[]}
         classification={step.classification}
+        markFetched={markFetched}
+        markEvidenceField={markEvidenceField}
+        hasSummary={false}
+        summaryContent={null}
+        handleOpenFromModal={handleOpenFromModal}
       />
     );
-
-    // Fetch evidence data
+    console.log(2);
     const evidenceItem = await callApiForEvidence(step.name, step.execution);
 
-    const prevSteps = [];
+    // compute prevSteps (unchanged)
+    // const prevSteps = [];
+    // Object.keys(groupedByPhase).forEach((phaseKey) => {
+    //   const pI = parseInt(phaseKey);
+    //   if (pI < phaseIndex) {
+    //     groupedByPhase[phaseKey].forEach((subtask) => {
+    //       subtask.workflow.forEach((_, sI) =>
+    //         prevSteps.push([pI, subtask.index, sI])
+    //       );
+    //     });
+    //   } else if (pI === phaseIndex) {
+    //     groupedByPhase[phaseKey].forEach((subtask) => {
+    //       if (subtask.index < subtaskIndex) {
+    //         subtask.workflow.forEach((_, sI) =>
+    //           prevSteps.push([pI, subtask.index, sI])
+    //         );
+    //       } else if (subtask.index === subtaskIndex) {
+    //         subtask.workflow.forEach((_, sI) => {
+    //           if (sI < stepIndex) prevSteps.push([pI, subtask.index, sI]);
+    //         });
+    //       }
+    //     });
+    //   }
+    // });
 
-    Object.keys(groupedByPhase).forEach((phaseKey) => {
-      const pI = parseInt(phaseKey);
-      if (pI < phaseIndex) {
-        groupedByPhase[phaseKey].forEach((subtask) => {
-          subtask.workflow.forEach((_, sI) => {
-            prevSteps.push([pI, subtask.index, sI]);
-          });
-        });
-      } else if (pI === phaseIndex) {
-        groupedByPhase[phaseKey].forEach((subtask) => {
-          if (subtask.index < subtaskIndex) {
-            subtask.workflow.forEach((_, sI) => {
-              prevSteps.push([pI, subtask.index, sI]);
-            });
-          } else if (subtask.index === subtaskIndex) {
-            subtask.workflow.forEach((_, sI) => {
-              if (sI < stepIndex) {
-                prevSteps.push([pI, subtask.index, sI]);
-              }
-            });
-          }
-        });
-      }
-    });
-
-    console.log(prevSteps);
-    // Update evidence and ensure modal updates after state is applied
+    // Update evidence & both caches (serializable + JSX)
     setEvidence((prev) => {
       const updatedEvidence = { ...prev, [evidenceKey]: evidenceItem };
 
+      const contextStr = `${step.name} for ${subtask.description} for ${
+        currentWorkflowName || workflowName
+      }`;
+
+      // 1) save serializable snapshot to context (this is what goes to S3)
+      const modalData = {
+        isLoading: false,
+        step: {
+          // store only what's needed / JSON-safe
+          name: step.name,
+          classification: step.classification,
+          // include anything else primitive you need later (avoid functions / circular refs)
+        },
+        phaseIndex,
+        subtaskIndex,
+        stepIndex,
+        context: contextStr,
+        evidence: updatedEvidence[evidenceKey], // array or object; must be JSON-serializable
+        classification: step.classification,
+        markFetched,
+        hasSummary: false,
+        summaryContent: null,
+        // You can also store prevSteps if useful:
+        // prevSteps,
+      };
+
+      // merge into the global serializable cache
+      setModalCacheData((old) => {
+        const next = { ...old, [evidenceKey]: modalData };
+        // trigger a debounced upload snapshot
+        console.log(next);
+        saveModalCacheDebounced(600, next);
+        return next;
+      });
+
+      // 2) build JSX modal for immediate UI
       const modal = (
         <ModalContainer
+          key={`${phaseIndex}-${subtaskIndex}-${stepIndex}`}
           isLoading={false}
-          step={step}
+          step={modalData.step}
+          phaseIndex={phaseIndex}
           subtaskIndex={subtaskIndex}
           stepIndex={stepIndex}
-          context={`${step.name} for ${subtask.description} for ${workflowName}`}
-          evidence={updatedEvidence[evidenceKey]} // Now it is correctly updated
+          context={contextStr}
+          evidence={updatedEvidence[evidenceKey]}
           classification={step.classification}
+          markFetched={markFetched}
+          markEvidenceField={markEvidenceField}
+          hasSummary={false}
+          summaryContent={null}
+          handleOpenFromModal={handleOpenFromModal}
         />
       );
 
-      // Ensure modal update happens after state update
+      setModalCache((prevCache) => ({ ...prevCache, [evidenceKey]: modal }));
+      console.log(modalCacheData);
       setModalContent(modal);
-      setModalCache((prev) => ({ ...prev, [evidenceKey]: modal }));
 
       return updatedEvidence;
     });
 
-    // Update loading state
     setLoadingEvidence((prev) => ({ ...prev, [evidenceKey]: false }));
   };
 

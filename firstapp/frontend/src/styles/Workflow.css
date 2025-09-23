@@ -14,8 +14,10 @@
   width: 100%;
   min-height: 100vh;
   gap: 30px;
+  top: 15vh;
   overflow-y: hidden;
   position: relative;
+  padding-top: 10px;
 }
 
 .workflow-container > *:not(.faded-out) {
@@ -59,7 +61,7 @@
 .phase-label-text {
   color: #000;
   text-align: center;
-  font-family: "Noto Sans";
+  font-family: "Inter";
   font-size: 18px;
   font-style: normal;
   font-weight: 600;
@@ -100,7 +102,7 @@
   border-radius: 15px;
   background: rgba(186, 186, 186, 0.1);
   box-shadow: 2px 2px 15px 0px rgba(0, 0, 0, 0.15);
-  padding: 5px 18px 18px 18px;
+  padding: 15px 18px 18px 18px;
 
   transition: all 0.3s ease-in-out;
   display: flex;
@@ -154,7 +156,7 @@
   text-align: center;
   flex: 1;
   color: #000000;
-  font-family: "Noto Sans";
+  font-family: "Inter";
   font-size: 16px;
   font-style: normal;
   font-weight: 700;
@@ -165,7 +167,7 @@
 .subtask-card h3 {
   color: #000;
   text-align: center;
-  font-family: "Noto Sans";
+  font-family: "Inter";
   font-size: 16px;
   font-style: normal;
   font-weight: 700;

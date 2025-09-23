@@ -4,10 +4,16 @@ import axios from "axios";
 import { AuthContext } from "../contexts/AuthContext"; // Import AuthContext
 import "../styles/Dashboard.css";
 import CONFIG from "../config";
+import Sidebar from "./Sidebar";
 
 const Dashboard = () => {
-  const { user, setCurrentWorkflow, setCurrentWorkflowName, setWorkflowId } =
-    useContext(AuthContext); // Get user ID and setCurrentWorkflow from AuthContext
+  const {
+    user,
+    setCurrentWorkflow,
+    setCurrentWorkflowName,
+    setWorkflowId,
+    setModalCacheData,
+  } = useContext(AuthContext); // Get user ID and setCurrentWorkflow from AuthContext
   const [recentProjects, setRecentProjects] = useState([]);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true); // Track loading state
@@ -68,23 +74,46 @@ const Dashboard = () => {
     if (!user) return;
 
     try {
-      const response = await axios.get(
+      const { data } = await axios.get(
         `${CONFIG.BACKEND_URL}/api/get_workflow`,
-        { params: { user_id: user.id, project_name: projectName } }
+        {
+          params: { user_id: user.id, project_name: projectName },
+        }
       );
 
-      if (response.data.workflow) {
-        setTimeout(() => {
-          setIsExiting(true); // Trigger fade-out
-        }, 300);
+      if (!data?.workflow) return;
 
-        setTimeout(() => {
-          setCurrentWorkflow(JSON.stringify(response.data.workflow));
-          setCurrentWorkflowName(JSON.stringify(response.data.workflowName));
-          setWorkflowId(response.data.workflow_id); // Set workflow ID from response
-          navigate("/start-project"); // Redirect after animation
-        }, 300); // Matches the CSS animation duration
-      }
+      // Normalize payload
+      const wfObj =
+        typeof data.workflow === "string"
+          ? JSON.parse(data.workflow)
+          : data.workflow || {};
+
+      console.log(wfObj);
+      // Pull & strip UI meta so it doesn't pollute app schema
+      const savedCache = wfObj?.__uiMeta?.modalCacheData || {};
+      if (wfObj.__uiMeta) delete wfObj.__uiMeta; // <-- critical line
+
+      const ANIM_MS = 300;
+      setIsExiting(true);
+
+      setTimeout(() => {
+        // Store *clean* workflow (no __uiMeta)
+        setCurrentWorkflow(wfObj);
+
+        // Name as plain string
+        setCurrentWorkflowName(data.workflowName ?? projectName);
+
+        // Persist workflow id
+        setWorkflowId(data.workflow_id);
+
+        // Hydrate serializable modal cache separately
+        if (typeof setModalCacheData === "function") {
+          setModalCacheData(savedCache);
+        }
+
+        navigate("/start-project");
+      }, ANIM_MS);
     } catch (error) {
       console.error("Error fetching project workflow:", error);
     }
@@ -123,10 +152,10 @@ const Dashboard = () => {
               <div className="myProject">My Projects</div>
               <div className="statusRow">
                 <button className="status-btn">
-                  <p>In Progress</p>
+                  <span>In Progress</span>
                 </button>
                 <button className="status-btn">
-                  <p>Done</p>
+                  <span>Done</span>
                 </button>
               </div>
             </div>
@@ -173,92 +202,95 @@ const Dashboard = () => {
   }
 
   return (
-    <div
-      className={`dashboard ${
-        isExiting ? "exiting" : isVisible ? "visible" : ""
-      }`}
-    >
-      <div className="announcements">
-        <div className="ADescription">{formattedDate}</div>
-        <div className="ASection">
-          💪 A productive morning leads to a confident evening. Pick a task and
-          dive in! ☀️ 💼
+    <>
+      {/* <Sidebar /> */}
+      <div
+        className={`dashboard ${
+          isExiting ? "exiting" : isVisible ? "visible" : ""
+        }`}
+      >
+        <div className="announcements">
+          <div className="ADescription">{formattedDate}</div>
+          <div className="ASection">
+            💪 A productive morning leads to a confident evening. Pick a task
+            and dive in! ☀️ 💼
+          </div>
         </div>
-      </div>
-      <div className="quickStart">
-        <div className="QSDescription">Quick Tasks to Start...</div>
-        <div className="QSSection"></div>
-      </div>
+        <div className="quickStart">
+          <div className="QSDescription">Quick Tasks to Start...</div>
+          <div className="QSSection"></div>
+        </div>
 
-      <div className="project-section">
-        <div className="project-headings">
-          <div className="headings-left">
-            <div className="myProject">My Projects</div>
-            <div className="statusRow">
-              <button className="status-btn">
-                <p>In Progress</p>
-              </button>
-              <button className="status-btn">
-                <p>Done</p>
+        <div className="project-section">
+          <div className="project-headings">
+            <div className="headings-left">
+              <div className="myProject">My Projects</div>
+              <div className="statusRow">
+                <button className="status-btn">
+                  <span>In Progress</span>
+                </button>
+                <button className="status-btn">
+                  <span>Done</span>
+                </button>
+              </div>
+            </div>
+            <div className="headings-right">
+              <button
+                className="start-project-btn"
+                onClick={() => handleNewProject()}
+              >
+                <p>+ Start a project</p>
               </button>
             </div>
           </div>
-          <div className="headings-right">
-            <button
-              className="start-project-btn"
-              onClick={() => handleNewProject()}
-            >
-              <p>+ Start a project</p>
-            </button>
-          </div>
-        </div>
-        <div className="projects">
-          {recentProjects.length > 0 ? (
-            recentProjects.map((project, index) => {
-              const [name, lastModified] = project;
-              return (
-                <div
-                  key={index}
-                  className="project-card"
-                  onClick={() => handleProjectClick(name)}
-                  style={{
-                    cursor: "pointer",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  <div className="project-image"></div>
-                  <div className="project-description">
-                    <div className="project-header">
-                      {name.replace(".json", "")}
-                    </div>
-                    <div className="project-management">
-                      <div className="project-members">
-                        <div className="project-member">
-                          <img
-                            src={user ? user.picture : "/icons/ellipse.svg"}
-                            alt="Profile"
-                            className="account-icon"
-                          />
-                          <p className="username">{user.name}</p>
-                        </div>
+          <div className="projects">
+            {recentProjects.length > 0 ? (
+              recentProjects.map((project, index) => {
+                const [name, lastModified] = project;
+                return (
+                  <div
+                    key={index}
+                    className="project-card"
+                    onClick={() => handleProjectClick(name)}
+                    style={{
+                      cursor: "pointer",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    <div className="project-image"></div>
+                    <div className="project-description">
+                      <div className="project-header">
+                        {name.replace(".json", "")}
                       </div>
-                      <div className="project-progress">
-                        <div className="progress-text">In Progress</div>
-                        <div className="progress-bar"></div>
+                      <div className="project-management">
+                        <div className="project-members">
+                          <div className="project-member">
+                            <img
+                              src={user ? user.picture : "/icons/ellipse.svg"}
+                              alt="Profile"
+                              className="account-icon"
+                            />
+                            <p className="username">{user.name}</p>
+                          </div>
+                        </div>
+                        <div className="project-progress">
+                          <div className="progress-text">In Progress</div>
+                          <div className="progress-bar"></div>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              );
-            })
-          ) : (
-            <p>No recent projects</p>
-          )}
+                );
+              })
+            ) : (
+              <p>No recent projects</p>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

@@ -9,8 +9,8 @@ from openai import OpenAI
 import openai
 
 
-def add_evidence_metadata(evidence, userid, workflowid, db: Session,
-                          subtask_index=None, step_index=None, query_name=None):
+def add_evidence_metadata(evidence, userid, workflowid, db: Session, isSynthesis,
+                          subtask_index=None, step_index=None, query_name=None, source=None):
     """
     Adds metadata to SQL DB, including subtask/step indexes and optional query label.
     """
@@ -31,7 +31,9 @@ def add_evidence_metadata(evidence, userid, workflowid, db: Session,
         timestamp=datetime.now(timezone.utc),
         subtask_index=subtask_index,
         step_index=step_index,
-        query_name=query_name
+        query_name=query_name,
+        issynthesis=isSynthesis,
+        source=source
     )
     db.add(new_entry)
     db.commit()
@@ -136,14 +138,79 @@ def query_pinecone(query: str, userid: str, workflowid: str, k=5):
 
 
 def generate_rag_response(query: str, context_list: list[str]) -> str:
-    context = "\n".join(f"- {chunk}" for chunk in context_list)
+    context = "\n\n".join(f"- {chunk}" for chunk in context_list)
+
+    prompt = f"""
+You are a professional research assistant. You are given multiple sources of information (chunks of web content) related to the user’s query.
+
+Your job is to synthesize a comprehensive, well-structured answer using only the information in the context. Your answer should:
+
+1. **Be structured** using clear headings and bullet points.
+2. **Group insights thematically** (e.g. Effectiveness, Reach, Impact, Timeline, etc.) if applicable.
+3. **Cite sources** using (Source X) where X is the index of the context chunk that provided the information.
+4. **Avoid repetition** and hallucination. Do not make up data not in the context.
+5. **Be concise and professional**—suitable for a report or executive summary.
+
+---
+### User Query:
+{query}
+
+---
+### Context Chunks:
+{context}
+
+---
+### Final Response:
+"""
+
+    response = client.chat.completions.create(
+        model="gpt-4",
+        temperature=0.2,
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant that synthesizes information into professional summaries using only verified context."},
+            {"role": "user", "content": prompt}
+        ]
+    )
+
+    return response.choices[0].message.content
+
+
+def synthesize(query, evidence_list, dependency_list):
+    # Format evidence for current step
+    step_evidence = "\n".join(
+        f"- {item.get('content')}" for item in evidence_list if item.get("content")
+    )
+
+    # Format dependencies only if they exist
+    if dependency_list:
+        preceding_info = "\n".join(
+            f"- {item.get('content')}" for item in dependency_list if item.get("content")
+        )
+        user_prompt = (
+            f"You are completing the following task:\n{query}\n\n"
+            f"Evidence collected for this step:\n{step_evidence or '[None]'}\n\n"
+            f"Important information from preceding tasks:\n{preceding_info}\n\n"
+            "Based on this information, complete the task as clearly and fully as possible."
+        )
+    else:
+        user_prompt = (
+            f"You are completing the following task:\n{query}\n\n"
+            f"Evidence collected for this step:\n{step_evidence or '[None]'}\n\n"
+            "Use the above evidence to complete the task as clearly and fully as possible."
+        )
+
+    system_prompt = (
+        "You are an intelligent agent helping to complete a multi-step task. "
+        "Use relevant evidence and reasoning to fulfill the current task."
+    )
 
     response = client.chat.completions.create(
         model="gpt-4",
         messages=[
-            {"role": "system", "content": "You are a helpful assistant. Use the following memory to answer the question."},
-            {"role": "user", "content": f"Context:\n{context}\n\nQuestion: {query}"}
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt}
         ]
     )
-    return response.choices[0].message.content
+    return response.choices[0].message.content.strip()
+
 

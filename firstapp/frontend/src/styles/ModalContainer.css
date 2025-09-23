@@ -4,14 +4,14 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: "Noto Sans", sans-serif; /* Set Noto Sans as the default font */
+  font-family: "Inter", sans-serif; /* Set Inter as the default font */
 }
 
 .modal-container {
   position: relative;
   display: flex;
   width: 90%;
-  height: calc(94vh - 100px);
+  height: 79vh;
   flex-direction: column; /* Fix typo from `justify-content: column` */
   justify-content: flex-start;
   border-radius: 20px;
@@ -26,7 +26,7 @@
 }
 
 .modal-container.user {
-  height: 86vh; /* Override to set a fixed height */
+  height: 79vh; /* Override to set a fixed height */
 }
 
 /* USER */
@@ -58,13 +58,13 @@
 
 .chat-message {
   display: inline-flex;
-  flex-direction: row;
+  flex-direction: column;
 
   background-color: transparent;
   padding: 8px;
   margin-bottom: 10px;
   border-radius: 5px;
-  max-width: 70%;
+  width: 100%;
   /* word-wrap: break-word;  */
   gap: 16px;
 }
@@ -89,7 +89,7 @@
   box-shadow: 0px 2px 8px 0px rgba(0, 0, 0, 0.15);
 
   color: #000;
-  font-family: "Noto Sans";
+  font-family: "Inter";
   font-size: 12px;
   font-style: normal;
   font-weight: 300;
@@ -121,6 +121,39 @@
   background-color: #00000000;
 }
 
+.chat-input-inline {
+  display: flex;
+  width: 100%;
+  gap: 8px;
+  margin-top: 6px;
+  padding: 8px 12px;
+  border-radius: 14px;
+  background: #f1f1f1;
+  align-items: center;
+  justify-content: center;
+  align-items: center;
+  align-self: stretch;
+  height: 4vh;
+}
+
+.chat-input-inline input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 14px;
+}
+
+.chat-header {
+  color: #000;
+  font-family: Inter;
+  font-size: 16px;
+  align-self: center;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 150%; /* 24px */
+  letter-spacing: -0.304px;
+}
 .chat-input {
   display: flex;
   width: 70%;
@@ -139,6 +172,11 @@
   border: 1px solid #777;
   color: rgb(96, 96, 96);
   font-size: 12px;
+}
+
+.sendIcon {
+  height: 2vh;
+  width: 2vh;
 }
 
 .chat-input-button {
@@ -178,7 +216,7 @@
 }
 
 .search-header h2 {
-  font-family: Noto Sans;
+  font-family: Inter;
   font-size: 16px;
   font-weight: 500;
   line-height: 24px;
@@ -307,8 +345,9 @@
   gap: 10px;
   border-radius: 10px;
   opacity: 0px;
+  cursor: pointer;
 
-  font-family: Noto Sans;
+  font-family: Inter;
   font-size: 14px;
   font-weight: 400;
   line-height: 45px;
@@ -386,4 +425,164 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+.second-page-content {
+  background-color: #fdfdfd;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 16px 20px 16px 20px;
+  margin: 20px;
+  border-radius: 16px;
+  /* box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.08); */
+  transition: all 0.3s ease-in-out;
+  animation: fadeIn 0.4s ease;
+  line-height: 1.6;
+  color: #333;
+  position: relative;
+  gap: 20px;
+  overflow: auto;
+}
+
+.synthesisText {
+  display: flex;
+  /* white-space: pre-wrap; */
+  text-align: flex-start;
+  align-items: flex-start;
+  flex-direction: column;
+  font-family: "Inter";
+  font-size: 14px !important;
+  font-style: normal;
+  font-weight: 300;
+  line-height: 150%; /* 48px */
+  letter-spacing: -0.608px;
+  outline: none;
+
+  overflow-y: auto; /* vertical scrollbar when content is too big */
+  padding: 5%; /* some padding for readability */
+  border-radius: 15px;
+  /* border: 1px solid #000; */
+  /* background: var(--trans_low, rgba(173, 173, 173, 0.1)); */
+}
+
+.buttonRow {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 5%;
+}
+.stepTag {
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 2px 12px;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  border-radius: 10px;
+  background: #dcdcdc;
+
+  color: #000;
+  font-family: Inter;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 150%; /* 18px */
+}
+
+.goal {
+  color: #000;
+
+  /* Page Title */
+  font-family: Inter;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 150%; /* 24px */
+  /* letter-spacing: -0.304px; */
+}
+.reviseContainer2 {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  /* height: 300px; */
+  padding: 5%;
+  justify-content: center;
+  align-items: center;
+  gap: 0px;
+  align-self: stretch;
+  border-radius: 15px;
+  border: 1px solid #000;
+  background: var(--trans_low, rgba(173, 173, 173, 0.1));
+}
+.reviseContainer2 p {
+  font-size: 14px !important;
+}
+.reviseInput {
+  width: 100%;
+  height: 100%;
+  resize: none; /* prevent manual resizing if you want */
+  border: none;
+  background: transparent;
+  color: #000;
+  text-align: flex-start;
+  font-family: "Inter";
+  font-size: 14px !important;
+  font-style: normal;
+  font-weight: 300;
+  line-height: 150%; /* 48px */
+  letter-spacing: -0.608px;
+  outline: none;
+}
+.second-page-content p {
+  margin-bottom: 24px;
+  text-align: center;
+  font-family: "Inter";
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 300;
+  line-height: 150%; /* 48px */
+  letter-spacing: -0.608px;
+  text-align: flex-start;
+  outline: none;
+  background: none;
+  border: none;
+  padding: 0;
+  box-shadow: none;
+}
+.backAndRevise2 {
+  width: 30%;
+  color: #000;
+  text-align: center;
+  font-family: "Inter";
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 150%; /* 30px */
+  align-self: center;
+  letter-spacing: -0.38px;
+  text-decoration-line: underline;
+  text-decoration-style: solid;
+  text-decoration-skip-ink: none;
+  text-decoration-thickness: auto;
+  text-underline-offset: auto;
+  text-underline-position: from-font;
+  border-color: black;
+}
+
+.generate2 {
+  display: flex;
+  width: 30%;
+  height: 56px;
+  /* padding: 10px; */
+  justify-content: center;
+  align-items: center;
+  align-self: center;
+  border-radius: 10px;
+  background: #000;
+  box-shadow: 2px 2px 15px 0px rgba(0, 0, 0, 0.15);
+  color: white;
+}
+.generate2 p {
+  font-size: 20px !important;
 }

@@ -2,7 +2,7 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: "Inter", sans-serif; /* Set Noto Sans as the default font */
+  font-family: "Inter", sans-serif; /* Set Inter as the default font */
 }
 
 a {
@@ -119,15 +119,27 @@ a {
 .project-headings {
   display: flex;
   flex-direction: row;
-  height: 12.5%;
+  min-height: 10vh; /* ensures baseline */
+  height: 10vh;
   width: 100%;
 }
 
 .headings-left {
   width: 85%;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  gap: 25%;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: 15%;
+}
+
+.headings-right {
+  width: 15%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: flex-end;
 }
 
 .myProject {
@@ -150,24 +162,25 @@ a {
 
 /* Start project button */
 .status-btn {
-  all: unset;
-  display: inline-flex;
-  padding: 6px 16px;
+  display: flex;
+  padding-left: 3px;
+  padding-right: 3px;
   justify-content: center;
   align-items: center;
   height: 100%;
-  /* min-width: 8%; */
+  min-width: fit-content;
   border-radius: 5px;
   background: #484848;
-  flex-wrap: wrap;
-  white-space: normal;
-  word-break: break-word;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  /* word-break: break-word; */
   flex-shrink: 0;
 }
 
-.status-btn p {
+.status-btn span {
   color: #fff;
-  text-align: center;
+  margin: 10px 10px;
+  /* text-align: center; */
 
   /* Medium-12 */
   font-family: var(--font-family-Font-1, Inter);
@@ -175,14 +188,6 @@ a {
   font-style: normal;
   font-weight: var(--font-weight-500, 500);
   line-height: var(--line-height-20, 20px); /* 166.667% */
-}
-
-.headings-right {
-  width: 15%;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  justify-content: flex-end;
 }
 
 /* Start project button */
@@ -215,7 +220,7 @@ a {
 .projects {
   display: flex;
   flex-wrap: wrap;
-  gap: 2%;
+  gap: 2vh 2%; /* 2vh vertical, 2% horizontal */
   justify-content: flex-start;
   align-content: flex-start;
   height: 100%;

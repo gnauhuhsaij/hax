@@ -1,3 +1,6 @@
+* {
+  font-family: "Inter", sans-serif;
+}
 .memory-overlay {
   position: fixed;
   top: 0;
@@ -49,61 +52,72 @@
   color: #444;
 }
 
+.back-button {
+  position: absolute;
+  left: 100px;
+  border: none;
+}
+
 .memory-search-section {
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
-  margin-bottom: 30px;
+  height: 100px;
+  gap: 20%;
 }
 
 .memory-search-input {
   width: 60%;
+  height: 40%;
   max-width: 500px;
   padding: 12px 16px;
   border-radius: 12px;
   border: 1px solid #ccc;
   font-size: 15px;
-  font-family: "Noto Sans", sans-serif;
+  font-family: "Inter", sans-serif;
 }
 
 .memory-filters {
+  width: 60%;
+  height: 40%;
+  max-width: 500px;
   display: flex;
-  gap: 12px;
+  gap: 2%;
   flex-wrap: wrap;
   justify-content: center;
 }
 
 .memory-filter {
   padding: 8px 16px;
-  width: 200px;
-  height: 25px;
-  border-radius: 20px;
+  width: 49%;
+  height: 100%;
+  border-radius: 12px;
   border: none;
   background: #f1f1f1;
   font-size: 14px;
   cursor: pointer;
   transition: background 0.2s ease;
+  gap: 5px;
 }
 
 .memory-filter:hover {
   background: #ddd;
 }
 
-.memory-cards-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 24px;
-  padding: 0 20px;
-  flex: 1;
+.memory-filter.active {
+  background: #333;
+  color: #fff;
+  border-color: #333;
 }
 
 .memory-cards-grid {
   display: grid;
   gap: 24px;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(18vh, 1fr));
   justify-items: center;
   padding: 0 20px;
+  margin-top: 20px;
 }
 
 @media (max-width: 900px) {
@@ -120,21 +134,32 @@
 
 .memory-card {
   width: 100%;
-  aspect-ratio: 3/4;
+  aspect-ratio: 4/5;
   background: #fdfdfd;
   border-radius: 14px;
-  padding: 16px 20px;
+  /* padding: 16px 20px; */
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  border-radius: 10px;
+  border: 2px solid #f0f0f0;
+  background: #fff;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  gap: 10%;
 }
 
 .memory-card-content {
-  height: 80%;
+  padding: 13px 15px;
+  background: #f9f9f9;
+  height: 62.5%;
   overflow: hidden;
+}
+
+.memory-card-info {
+  height: 37.5%;
+  display: flex;
+  flex-direction: column;
+  padding: 5% 10%;
 }
 
 .memory-card-footer {
@@ -154,42 +179,80 @@
   display: flex;
   flex-direction: row;
   gap: 10px;
-  width: 40%;
-  justify-content: flex-end;
+  width: 100%;
+  /* height: 18px; */
+  justify-content: space-between; /* pushes children to edges */
   align-items: center;
-  background: red;
+  margin-top: 8%;
 }
+
+.stepTag,
 .memory-card-delete-button {
-  background: green;
-  border-radius: 50%;
+  height: 18px; /* pick a size you like */
+  /* align-items: center;
+  justify-content: center; */
+}
+
+.stepTag {
+  display: inline-flex;
+  padding: 2px 8px;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  border-radius: 10px;
+  background: #f9f1f7;
+  color: #7e8395;
+  font-family: Inter;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 150%; /* 15px */
+  letter-spacing: -0.19px;
+}
+.memory-card-delete-icon {
+  width: 18px;
+  height: 18px;
   cursor: pointer;
   color: #444;
 }
-.memory-card-delete-button img {
-  width: 24px;
-  height: 24px;
-  object-fit: contain;
-}
+
 .memory-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
 }
 
-.memory-card-content h4 {
-  margin: 0 0 10px 0;
-  font-size: 16px;
-  font-weight: 600;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.memory-card-info h4 {
+  color: #000;
+  font-family: Inter;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 150%; /* 18px */
+  letter-spacing: -0.228px;
+
+  white-space: nowrap; /* no wrapping */
+  overflow: hidden; /* hide overflow */
+  text-overflow: ellipsis; /* add … when cropped */
+}
+
+.memory-card-info p {
+  color: #000;
+  font-family: Inter;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 300;
+  line-height: 150%; /* 15px */
+  letter-spacing: -0.19px;
 }
 
 .memory-card-content p {
-  font-size: 14px;
-  color: #555;
-  line-height: 1.4;
-  margin: 4px 0;
-  max-height: 100%;
+  color: #969696;
+  font-family: Inter;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 150%; /* 15px */
+  letter-spacing: -0.19px;
   /* display: -webkit-box;
   -webkit-line-clamp: 13; /* Number of visible lines */
   -webkit-box-orient: vertical;
@@ -219,4 +282,261 @@
 .new-memory-button:hover {
   background: #222;
   transform: scale(1.05);
+}
+
+.memory-filter-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+/* Clickable affordance */
+.memory-card.clickable {
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.memory-card.clickable:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* Slide container */
+.memory-canvas {
+  position: relative;
+  transition: transform 280ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 280ms ease;
+  will-change: transform, opacity;
+}
+
+/* When entering detail, slide right; when going back, slide left */
+.memory-canvas.slide-right {
+  transform: translateX(0); /* final state */
+}
+.memory-canvas.slide-left {
+  transform: translateX(
+    0
+  ); /* also final; we animate using opacity for subtle effect */
+}
+
+/* Optional: fade a bit when switching views for extra crispness */
+.memory-canvas.slide-right,
+.memory-canvas.slide-left {
+  opacity: 1;
+}
+
+/* Detail layout */
+.detail-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: calc(100vh - 120px);
+}
+
+.detail-header {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  align-items: center;
+  gap: 12px;
+}
+
+.back-button,
+.close-button {
+  padding: 6px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.detail-title {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 300;
+  margin: 0;
+}
+
+.detail-title p {
+  font-weight: 600;
+}
+
+.detail-title a {
+  color: inherit; /* inherit the same color as heading */
+  text-decoration: none; /* remove underline */
+}
+
+.detail-title a:visited {
+  color: inherit; /* remove the purple visited effect */
+}
+
+.detail-meta {
+  display: flex;
+  align-items: center;
+  margin-top: 30px;
+  gap: 16px;
+  font-size: 12px;
+  color: #666;
+}
+
+.detail-version-select label {
+  margin-right: 6px;
+  font-weight: 500;
+}
+
+.detail-body {
+  flex: 1 1 auto;
+  overflow: auto;
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  background: #fff;
+  padding: 16px;
+}
+
+.detail-text {
+  white-space: pre-wrap;
+  margin: 0;
+  font-family: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.detail-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.detail-actions .danger {
+  background: transparent;
+  border: 1px solid #ffbdbd;
+  color: red;
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  width: auto;
+  height: auto;
+  /* white-space: normal; */
+}
+
+.detail-actions button {
+  display: inline-block;
+  background: transparent;
+  border: 1px solid #e5e5e5;
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  width: auto;
+  height: auto;
+  /* white-space: normal; */
+}
+
+.detail-actions button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.save-mode {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: auto;
+  font-size: 13px;
+  color: #444;
+}
+/* Tiny badge showing version count on cards */
+.versionBadge {
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  background: rgba(0, 0, 0, 0.06);
+}
+
+/* Optional: make header's first row consistent across modes */
+.memory-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.detail-textarea {
+  width: 100%;
+  height: 100%;
+  resize: none;
+  border: none;
+  border-radius: 12px;
+  padding: 12px;
+  font-family: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial;
+  font-size: 14px;
+  line-height: 1.5;
+  outline: none;
+  background: #fff;
+  scrollbar-width: none;
+}
+
+.subtask-filter-row {
+  display: flex;
+  width: 100%;
+  height: 25px;
+  overflow-x: none;
+  gap: 8px;
+  padding: 0 20px;
+  margin-top: 15px;
+}
+
+.subtask-filter-button {
+  /* flex: 0 0 auto; */
+  height: 100%;
+  padding: 6px 12px;
+  font-size: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #f7f7f7;
+  cursor: pointer;
+  min-width: fit-content; /* ensures it never shrinks smaller than text */
+}
+
+.subtask-filter-button.active {
+  background: #333;
+  color: #fff;
+  border-color: #333;
+}
+
+.source-evidence-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 12px;
+  padding-bottom: 20px;
+}
+
+.source-evidence-block {
+  background: #fafafa;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 12px 16px;
+}
+
+.source-evidence-block .detail-text {
+  white-space: pre-wrap;
+  margin: 0 0 8px;
+}
+
+.evidence-meta,
+.evidence-summary-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #666;
+}
+
+.evidence-summary-meta {
+  margin-top: 10px;
+}
+
+.source-evidence-summary {
+  border: 1px solid rgb(202, 197, 151);
+  background-color: rgb(255, 253, 240);
+  margin-bottom: 10px;
+  padding: 10px;
+  border-radius: 8px;
 }

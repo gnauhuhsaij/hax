@@ -5,11 +5,24 @@ const Step = ({ step, evidenceKey, onRoleCircleClick, evidence, loading }) => {
   const getSvgPath = () => {
     switch (step.classification) {
       case "Gather information from external sources":
-        return "/icons/opt1.svg";
+        return "/icons/opt1.png";
       case "Gather information from user":
-        return "/icons/opt2.svg";
+        return "/icons/opt2.png";
       case "Generate new information from knowledge base":
-        return "/icons/opt3.svg";
+        return "/icons/opt3.png";
+      default:
+        return null;
+    }
+  };
+
+  const getSvgPath2 = () => {
+    switch (step.status) {
+      case "Finished":
+        return "/icons/finished.png";
+      case "Not Started":
+        return "/icons/notStarted.png";
+      case "In Progress":
+        return "/icons/inProgress.png";
       default:
         return null;
     }
@@ -17,20 +30,23 @@ const Step = ({ step, evidenceKey, onRoleCircleClick, evidence, loading }) => {
 
   return (
     <div className="step">
+      <div className="step-indexCircle">
+        {getSvgPath() ? (
+          <img src={getSvgPath()} alt={`SVG for ${step.classification}`} />
+        ) : null}
+      </div>
+      <div className="step-name">{step.name?.split(": ")[1]}</div>
       <div className="step-header">
-        <div className="step-indexCircle">
-          {getSvgPath() ? (
-            <img src={getSvgPath()} alt={`SVG for ${step.classification}`} />
-          ) : null}
-        </div>
-        <div className="step-name">{step.name?.split(": ")[1]}</div>
         <div
           className={`step-roleCircle`}
           onClick={(e) => {
             e.stopPropagation();
             onRoleCircleClick();
           }}
-        ></div>
+        >
+          <img src={getSvgPath2()} alt={`0`} />
+          {/* <img src="/icons/opt1.png" alt="AAA" /> */}
+        </div>
       </div>
 
       {/* {

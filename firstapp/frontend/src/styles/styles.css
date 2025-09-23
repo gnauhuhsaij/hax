@@ -1,15 +1,18 @@
-/* Apply Noto Sans globally */
+/* Apply Inter globally */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: 'Noto Sans', sans-serif; /* Set Noto Sans as the default font */
+  font-family: "Inter", sans-serif; /* Set Inter as the default font */
 }
 
 /* Full-page gradient background */
 body {
-  background: var(--gradient_back, linear-gradient(154deg, #FDF9FF 11.78%, #EBF5FF 57.83%, #FDF7FF 98.35%));
-  font-family: 'Roboto', sans-serif;
+  background: var(
+    --gradient_back,
+    linear-gradient(154deg, #fdf9ff 11.78%, #ebf5ff 57.83%, #fdf7ff 98.35%)
+  );
+  font-family: "Roboto", sans-serif;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -32,11 +35,10 @@ body {
   text-align: left;
 }
 
-
 /* Title at the top */
 .website-title {
   color: #000;
-  font-family: 'Noto Sans';
+  font-family: "Inter";
   font-size: 32px;
   font-style: normal;
   font-weight: 600;
@@ -66,19 +68,18 @@ body {
   padding: 16px 17px;
   margin: auto; /* Centers it horizontally */
   gap: 110px;
-  
+
   border-radius: 10px;
   border: 1.5px solid #000;
-  background: rgba(255, 255, 255, 0.40);
+  background: rgba(255, 255, 255, 0.4);
 }
-
 
 input {
   border: none;
   background: transparent;
   font-size: 16px;
   flex: 1;
-  color: #6F6F6F;
+  color: #6f6f6f;
   font-style: normal;
   font-weight: 300;
   line-height: 150%; /* 24px */
@@ -204,5 +205,3 @@ button i {
   box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
   padding: 20px;
 }
-
-

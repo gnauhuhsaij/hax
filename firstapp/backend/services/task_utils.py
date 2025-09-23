@@ -25,9 +25,13 @@ def create_engine_from_secret(secret_name, region_name="us-east-1"):
     port = secret2["db-port"]
     dbname = secret2["dbname"]
 
-    url = f"postgresql://{username}:{password}@{endpoint}:{port}/{dbname}"
+    url = f"postgresql://{username}:{password}@{endpoint}:{port}/{dbname}?sslmode=require"
     print(url)
-    engine = create_engine(url)
+    engine = create_engine(
+        url,
+        pool_pre_ping=True,      # ✅ test connection before giving it to you
+        pool_recycle=300        # ✅ drop connections older than 5 minutes)
+        )       
 
     return engine
 
@@ -97,6 +101,9 @@ def transform_to_dict(steps_list):
             temp['classification'] = line.replace('Classification: ', '').strip()
         elif line.lower().startswith('execution:'):
             temp['execution'] = line.replace('Execution: ', '').strip()
+        elif line.lower().startswith('dependence:'):
+            temp['dependence'] = line.replace('Dependence: ', '').strip()
+
     
     # Append the last temp dictionary
     if temp:
